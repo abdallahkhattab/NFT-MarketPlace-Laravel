@@ -1,12 +1,19 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\WalletController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MetaMaskController;
 
 Route::get('/', function () {
     return view('pages.home.home');
 });
+
+Route::post('/get-nonce', [MetaMaskController::class, 'getNonce'])->name('get.nonce'); // Get nonce for wallet
+
+Route::post('/authenticate', [MetaMaskController::class, 'authenticate'])->name('authenticate.wallet'); // Wallet authentication
+
 
 
 Route::get('/public-profile', function () {

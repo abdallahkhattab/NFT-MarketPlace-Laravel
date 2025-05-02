@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+  <meta name="csrf-token" content="{{ csrf_token() }}">
  @include('pages.head')
  @stack('styles')
 </head>
