@@ -10,7 +10,7 @@
             </a>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- NFT Card 1 -->
             <div class="nft-card rounded-2xl overflow-hidden bg-gray-800">
                 <div class="h-64 overflow-hidden">

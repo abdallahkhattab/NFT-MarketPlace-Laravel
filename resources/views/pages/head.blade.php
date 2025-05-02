@@ -1,23 +1,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Marketplace</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>@yield('title')</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.12.0/cdn.min.js" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'primary': '#8e42f5',
-                    'dark': '#1a1a1a',
-                    'darker': '#121212',
-                    'light-purple': '#a259ff',
-                }
-            }
-        }
-    }
-</script>
+
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 .typewriter {

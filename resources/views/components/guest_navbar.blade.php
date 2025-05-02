@@ -1,7 +1,4 @@
-<header class="bg-darker py-4 px-6 md:px-10">
-
- @include('components.guest_navbar')
-
+@guest
 
 <div class="container mx-auto flex justify-between items-center">
     <!-- Logo -->
@@ -17,8 +14,8 @@
         <a href="{{ route('marketplace') }}" class="text-white hover:text-light-purple transition-colors">Marketplace</a>
         <a href="{{ route('ranking') }}" class="text-white hover:text-light-purple transition-colors">Rankings</a>
         <a href="{{ route('wallet-connection') }}" class="text-white hover:text-light-purple transition-colors">Connect a Wallet</a>
-        <a href="{{ route('logout') }}" class="bg-light-purple hover:bg-purple-600 text-white py-2 px-6 rounded-full flex items-center transition-colors">
-            <i class="fas fa-user mr-2"></i> Log Out
+        <a href="{{ route('login') }}" class="bg-light-purple hover:bg-purple-600 text-white py-2 px-6 rounded-full flex items-center transition-colors">
+            <i class="fas fa-user mr-2"></i> Log In
         </a>
     </div>
 
@@ -45,13 +42,4 @@
     </a>
 </div>
        
- 
-</header>
-
-
-<script>
-    document.getElementById("menu-toggle").addEventListener("click", function () {
-        const menu = document.getElementById("mobile-menu");
-        menu.classList.toggle("hidden");
-    });
-</script>
+@endguest

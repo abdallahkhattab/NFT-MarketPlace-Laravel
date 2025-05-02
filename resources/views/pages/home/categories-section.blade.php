@@ -3,7 +3,7 @@
     <div class="container mx-auto">
         <h2 class="text-3xl font-bold mb-10">Browse Categories</h2>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <!-- Category 1 -->
             <div class="category-card rounded-2xl overflow-hidden bg-gray-800">
                 <div class="relative h-64 overflow-hidden">
