@@ -3,10 +3,8 @@
 <title>@yield('title')</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.12.0/cdn.min.js" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 .typewriter {
 overflow: hidden;
 white-space: nowrap;

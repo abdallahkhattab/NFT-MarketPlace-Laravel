@@ -29,9 +29,10 @@ Route::get('register', function(){
     return view('auth.register');
 });
 
-Route::get('connect-a-wallet', function(){
-    return view('auth.connnect-wallet');
-})->name('wallet-connection');
+
+Route::get('connect-a-wallet',[MetaMaskController::class,'connect'])->name('wallet-connection');
+
+Route::post('disconnect-wallet',[MetaMaskController::class,'disconnect']);
 
 Route::get('markerplace',function(){
     return view('pages.marketplace.marketplace');

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('wallet_address')->nullable()->unique();
             $table->string('wallet_type')->nullable();
             $table->string('nonce')->nullable()->unique();
+            $table->string('nonce_generated_at')->nullable();
             $table->timestamps();
         
         });
