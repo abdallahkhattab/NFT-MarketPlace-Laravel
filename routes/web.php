@@ -1,14 +1,12 @@
 <?php
 
+use App\Models\PublicProfile;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MetaMaskController;
-
-Route::get('/', function () {
-    return view('pages.home.home');
-});
+use App\Http\Controllers\PublicProfileController;
 
 Route::post('/get-nonce', [MetaMaskController::class, 'getNonce'])->name('get.nonce'); // Get nonce for wallet
 
@@ -16,9 +14,10 @@ Route::post('/authenticate', [MetaMaskController::class, 'authenticate'])->name(
 
 
 
-Route::get('/public-profile', function () {
-    return view('pages.profile.public-profile');
-})->name('public-profile');
+
+Route::get('/profile/@{user:name}',[PublicProfileController::class,'index'])->name('public-profile');
+Route::get('/myprofile/@{user:name}',[PublicProfileController::class,'show'])->name('my-public-profile');
+
 
 
 Route::get('/ranking', function () {
@@ -42,10 +41,16 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+/*
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});*/
+
+
+Route::middleware('auth')->group(function () {
+    Route::resource('/profile' , ProfileController::class);
 });
 
 

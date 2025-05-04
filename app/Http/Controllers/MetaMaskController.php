@@ -28,6 +28,7 @@ class MetaMaskController extends Controller
         $validator = Validator::make($request->all(), [
             'wallet_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/',
             'wallet_type' => 'nullable|string|in:metamask,walletconnect,coinbase',
+            'status'=>'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -48,7 +49,10 @@ class MetaMaskController extends Controller
                         'user_id' => $user->id,
                         'wallet_address' => $walletAddress,
                         'wallet_type' => $walletType,
+                        
                     ]);
+
+
                 } elseif ($wallet->wallet_address !== $walletAddress) {
                     return response()->json([
                         'error' => 'You already have a different wallet connected. Please disconnect first.'
@@ -144,6 +148,7 @@ class MetaMaskController extends Controller
             'wallet_type' => 'nullable|string|in:metamask,walletconnect,coinbase',
             'name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
+            'status'=> 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -377,8 +382,9 @@ class MetaMaskController extends Controller
 
             // Create new user with provided information
             DB::transaction(function () use ($email, $name, $walletAddress, $walletType) {
+                $randomName = 'crypto_' . time() . '_' . Str::random(4) . '_' . 'user' ; // e.g., 'name_1714748740_XYzDqA'
                 $user = User::create([
-                    'name' => $name ?: 'NFT User',
+                    'name' => $name ?: $randomName,
                     'email' => $email,
                     'password' => bcrypt(Str::random(32)),
                 ]);
@@ -387,7 +393,10 @@ class MetaMaskController extends Controller
                     'user_id' => $user->id,
                     'wallet_address' => $walletAddress,
                     'wallet_type' => $walletType,
+                    'status'=> 'connected',
                 ]);
+
+                $user->profile()->create([]);
 
                 Auth::login($user);
 
@@ -401,7 +410,7 @@ class MetaMaskController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Registration successful',
-                'redirect' => route('marketplace'),
+                'redirect' => route('my-public-profile'),
             ]);
         }
     }
@@ -513,20 +522,37 @@ class MetaMaskController extends Controller
             return response()->json(['error' => 'Not authenticated'], 401);
         }
 
+        // Log out the user
+        Auth::logout();
+
+        // Invalidate the session and regenerate the token
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Clear wallet details
         Wallet::where('user_id', $user->id)->update([
             'wallet_address' => null,
             'wallet_type' => null,
             'nonce' => null,
             'nonce_generated_at' => null,
+            'status' => 'disconnected'
         ]);
 
-        Log::info('Wallet disconnected', [
+        Log::info('User logged out and wallet disconnected', [
             'user_id' => $user->id,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Wallet disconnected successfully',
+            'message' => 'Logged out and wallet disconnected successfully',
+            'redirect' => '/' // Redirect to connect wallet page
         ]);
     }
+
+    private function recoverAddress($message, $signature)
+    {
+        // Placeholder; use a library like web3p/ethereum-tx for production
+        return '0x' . substr(hash('sha256', $message . $signature), 0, 40);
+    }
+    
 }

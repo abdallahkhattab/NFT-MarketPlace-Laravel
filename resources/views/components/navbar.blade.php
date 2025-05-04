@@ -18,8 +18,9 @@
        <div class="hidden md:flex items-center space-x-6">
            <a href="{{ route('marketplace') }}" class="text-white hover:text-light-purple transition-colors">Marketplace</a>
            <a href="{{ route('ranking') }}" class="text-white hover:text-light-purple transition-colors">Rankings</a>
-           <a href="{{ route('wallet-connection') }}" class="text-white hover:text-light-purple transition-colors">Connect a Wallet</a>
-             
+            <a href="{{ route('wallet-connection') }}" class="text-white hover:text-light-purple transition-colors">Connect a Wallet</a>
+
+            
            <!-- Desktop Dropdown Button -->
            <div class="relative">
                <button id="userDropdownButton" class="flex items-center space-x-2 text-white bg-light-purple hover:bg-purple-600 focus:ring-2 focus:ring-purple-300 focus:outline-none font-medium rounded-lg text-sm px-4 py-3 text-center" type="button">
@@ -36,12 +37,22 @@
                        <div class="truncate text-gray-500 dark:text-gray-400">{{ auth()->user()->email }}</div>
                    </div>
                    <ul class="py-2 text-sm text-gray-500 dark:text-gray-200">
+
+                    @php
+                        $profile = Auth::user()->profile;
+                    @endphp
+                    @if ($profile)
+                    <li>
+                        <a href="{{ route('profile.edit', ['profile'=>$profile]) }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Edit Profile</a>
+                    </li>
+                        
+                    @endif
+                      
                        <li>
-                           <a href="{{ route('profile.edit') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Profile</a>
+                           <a href="{{ route('public-profile',['user'=>Auth()->user()->name]) }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">My Profile</a>
                        </li>
-                       <li>
-                           <a href="{{ route('dashboard') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
-                       </li>
+
+                       
                    </ul>
                    <div class="py-2">
                        <form method="POST" action="{{ route('logout') }}">
@@ -83,9 +94,10 @@
                </div>
            </div>
            
-           <a href="{{ route('profile.edit') }}" class="block text-gray-400  hover:text-light-purple py-2 pl-11">Profile</a>
-           <a href="{{ route('dashboard') }}" class="block text-gray-400  hover:text-light-purple py-2 pl-11">Dashboard</a>
+           <a href="" class="block text-gray-400  hover:text-light-purple py-2 pl-11">Edit Profile</a>
            
+            <a href="{{ route('public-profile',['user'=>Auth()->user()->name]) }}" class="block text-gray-400  hover:text-light-purple py-2 pl-11">My Profile</a>
+       
            <form method="POST" action="{{ route('logout') }}" class="mt-2">
                @csrf
                <button type="submit" class="w-full bg-light-purple hover:bg-purple-600 text-white py-2 px-4 rounded-lg text-sm font-medium flex items-center">

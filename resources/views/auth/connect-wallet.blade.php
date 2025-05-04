@@ -194,6 +194,18 @@
                         </div>
                     </button>
 
+                    <button
+                        class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
+                        id="trustwallet-btn">
+                        <div class="flex items-center">
+                            <img src="https://altcoinsbox.com/wp-content/uploads/2023/03/trust-wallet-logo.png"
+                                alt="Trust Wallet Icon" class="w-8 h-8 mr-4">
+                            <span class="text-lg font-semibold">TrustWallet</span>
+                        </div>
+                    </button>
+
+                 
+
                     <!-- Wallet Connect -->
                     <button
                         class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
@@ -281,15 +293,26 @@
         // Initialize wallet buttons
         document.addEventListener('DOMContentLoaded', function() {
             const metamaskBtn = document.getElementById('metamask-btn');
+            const trustwalletBtn = document.getElementById('trustwallet-btn');
             const walletconnectBtn = document.getElementById('walletconnect-btn');
             const coinbaseBtn = document.getElementById('coinbase-btn');
 
             if (metamaskBtn) metamaskBtn.addEventListener('click', () => connectWallet('metamask'));
+            if (trustwalletBtn) trustwalletBtn.addEventListener('click', () => connectWallet('trustwallet'));
             if (walletconnectBtn) walletconnectBtn.addEventListener('click', () => connectWallet('walletconnect'));
             if (coinbaseBtn) coinbaseBtn.addEventListener('click', () => connectWallet('coinbase'));
 
             // Check if user already has a connected wallet
             checkWalletConnection();
+
+            // Add logout event listener
+            const logoutButton = document.querySelector('a[href*="logout"], button[href*="logout"]');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await handleLogout();
+                });
+            }
         });
 
         // Store wallet connection state
@@ -301,9 +324,49 @@
         };
 
         /**
+         * Get the appropriate provider based on wallet type
+         */
+        function getProvider(walletType) {
+            if (walletType === 'trustwallet') {
+                return window.trustwallet;
+            } else {
+                return window.ethereum;
+            }
+        }
+
+        /**
          * Check if user has a connected wallet
          */
         async function checkWalletConnection() {
+            // First, check if the user is authenticated with the backend
+            try {
+                const authCheck = await fetch('/check-auth', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    }
+                });
+                const authData = await authCheck.json();
+
+                if (!authData.authenticated) {
+                    // If not authenticated, clear wallet state and UI
+                    walletState.connected = false;
+                    walletState.address = null;
+                    walletState.type = null;
+                    walletState.chainId = null;
+                    localStorage.removeItem('walletState');
+                    resetWalletUI();
+                    return;
+                }
+            } catch (err) {
+                console.error('Error checking authentication:', err);
+                resetWalletUI();
+                return;
+            }
+
+            // Check for MetaMask
             if (window.ethereum) {
                 try {
                     const accounts = await ethereum.request({
@@ -316,10 +379,109 @@
                         });
                         updateWalletState('metamask', accounts[0], chainId);
                         updateConnectedUI(accounts[0], 'metamask');
+                        return;
                     }
                 } catch (err) {
-                    console.error('Error checking connection:', err);
+                    console.error('Error checking MetaMask connection:', err);
                 }
+            }
+
+            // Check for TrustWallet
+            if (window.trustwallet) {
+                try {
+                    const accounts = await trustwallet.request({
+                        method: 'eth_accounts'
+                    });
+
+                    if (accounts.length > 0) {
+                        const chainId = await trustwallet.request({
+                            method: 'eth_chainId'
+                        });
+                        updateWalletState('trustwallet', accounts[0], chainId);
+                        updateConnectedUI(accounts[0], 'trustwallet');
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Error checking TrustWallet connection:', err);
+                }
+            }
+
+            // Check local storage only if no active wallet connection is found
+            const savedState = localStorage.getItem('walletState');
+            if (savedState) {
+                try {
+                    const state = JSON.parse(savedState);
+                    if (state.connected && state.address && state.type) {
+                        // Verify wallet state with backend
+                        const walletCheck = await fetch('/check-wallet', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            },
+                            body: JSON.stringify({
+                                wallet_address: state.address,
+                                wallet_type: state.type
+                            })
+                        });
+                        const walletData = await walletCheck.json();
+
+                        if (walletData.connected) {
+                            updateConnectedUI(state.address, state.type);
+                            walletState.connected = state.connected;
+                            walletState.address = state.address;
+                            walletState.type = state.type;
+                            walletState.chainId = state.chainId;
+                        } else {
+                            localStorage.removeItem('walletState');
+                            resetWalletUI();
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing saved wallet state:', e);
+                    localStorage.removeItem('walletState');
+                    resetWalletUI();
+                }
+            }
+        }
+
+        /**
+         * Handle logout
+         */
+        async function handleLogout() {
+            try {
+                showLoadingMessage('Logging out...');
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    // Clear wallet state and UI
+                    walletState.connected = false;
+                    walletState.address = null;
+                    walletState.type = null;
+                    walletState.chainId = null;
+                    localStorage.removeItem('walletState');
+                    resetWalletUI();
+                    showSuccessMessage('Logged out successfully');
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                } else {
+                    throw new Error(data.error || 'Logout failed');
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+                showErrorMessage('Failed to log out: ' + error.message);
+            } finally {
+                hideLoadingMessage();
             }
         }
 
@@ -332,29 +494,37 @@
             try {
                 let walletAddress;
                 let chainId;
+                let provider;
 
                 if (walletType === 'metamask') {
-                    if (typeof window.ethereum !== 'undefined') {
-                        const accounts = await ethereum.request({
+                    provider = window.ethereum;
+                } else if (walletType === 'trustwallet') {
+                    provider = window.trustwallet;
+                }
+
+                if (walletType === 'metamask' || walletType === 'trustwallet') {
+                    if (typeof provider !== 'undefined') {
+                        const accounts = await provider.request({
                             method: 'eth_requestAccounts'
                         });
 
                         walletAddress = accounts[0];
-                        chainId = await ethereum.request({
+                        chainId = await provider.request({
                             method: 'eth_chainId'
                         });
 
                         const desiredChainId = '0x1'; // Ethereum Mainnet
                         if (chainId !== desiredChainId) {
-                            await switchNetwork(desiredChainId);
+                            await switchNetwork(desiredChainId, provider);
                             chainId = desiredChainId;
                         }
 
-                        updateWalletState('metamask', walletAddress, chainId);
+                        updateWalletState(walletType, walletAddress, chainId);
                         await authenticateWallet(walletAddress, walletType);
                     } else {
                         hideLoadingState(walletType);
-                        showWalletNotInstalledError('MetaMask');
+                        const walletName = walletType === 'metamask' ? 'MetaMask' : 'Trust Wallet';
+                        showWalletNotInstalledError(walletName);
                     }
                 } else if (walletType === 'walletconnect') {
                     hideLoadingState(walletType);
@@ -373,9 +543,9 @@
         /**
          * Switch to desired network
          */
-        async function switchNetwork(chainId) {
+        async function switchNetwork(chainId, provider) {
             try {
-                await ethereum.request({
+                await provider.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{
                         chainId
@@ -384,7 +554,7 @@
             } catch (switchError) {
                 if (switchError.code === 4902) {
                     try {
-                        await ethereum.request({
+                        await provider.request({
                             method: 'wallet_addEthereumChain',
                             params: [{
                                 chainId: chainId,
@@ -446,8 +616,21 @@
                     })
                 });
 
-                const nonceData = await nonceResponse.json();
-                console.log('Nonce response:', nonceData);
+                console.log('Nonce response status:', nonceResponse.status);
+                const responseText = await nonceResponse.text();
+                console.log('Nonce response text:', responseText);
+
+                let nonceData;
+                try {
+                    nonceData = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', e.message, responseText);
+                    throw new Error('Server returned invalid response. Please try again.');
+                }
+
+                if (!nonceResponse.ok) {
+                    throw new Error(nonceData.error || `HTTP error: ${nonceResponse.status}`);
+                }
 
                 if (!nonceData.nonce) {
                     throw new Error('Failed to get authentication nonce');
@@ -474,10 +657,12 @@
          * Sign message using wallet
          */
         async function signMessage(message, walletType) {
-            if (walletType === 'metamask') {
+            const provider = getProvider(walletType);
+
+            if (provider) {
                 try {
                     const from = walletState.address;
-                    const signature = await ethereum.request({
+                    const signature = await provider.request({
                         method: 'personal_sign',
                         params: [message, from]
                     });
@@ -559,37 +744,37 @@
             const shortAddress = walletAddress.substr(0, 6) + '...' + walletAddress.substr(-4);
 
             modal.innerHTML = `
-        <div class="bg-darker rounded-xl p-8 max-w-md w-full">
-            <h3 class="text-2xl font-bold text-white mb-4">Complete Registration</h3>
-            <p class="text-gray-400 mb-6">Please provide the following details to complete your account setup.</p>
-            
-            <form id="registration-form" class="space-y-4">
-                <div>
-                    <label class="block text-white text-sm font-medium mb-2">Connected Wallet</label>
-                    <div class="bg-gray-800 rounded-lg p-3 text-gray-400">${shortAddress}</div>
-                </div>
+            <div class="bg-darker rounded-xl p-8 max-w-md w-full">
+                <h3 class="text-2xl font-bold text-white mb-4">Complete Registration</h3>
+                <p class="text-gray-400 mb-6">Please provide the following details to complete your account setup.</p>
                 
-                <div>
-                    <label for="name" class="block text-white text-sm font-medium mb-2">Name</label>
-                    <input type="text" id="name" name="name" required
-                        class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white">
-                </div>
-                
-                <div>
-                    <label for="email" class="block text-white text-sm font-medium mb-2">Email Address</label>
-                    <input type="email" id="email" name="email" required
-                        class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white">
-                </div>
-                
-                <div class="pt-4">
-                    <button type="submit" 
-                        class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                        Complete Registration
-                    </button>
-                </div>
-            </form>
-        </div>
-    `;
+                <form id="registration-form" class="space-y-4">
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">Connected Wallet</label>
+                        <div class="bg-gray-800 rounded-lg p-3 text-gray-400">${shortAddress}</div>
+                    </div>
+                    
+                    <div>
+                        <label for="name" class="block text-white text-sm font-medium mb-2">Name</label>
+                        <input type="text" id="name" name="name" required
+                            class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white">
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-white text-sm font-medium mb-2">Email Address</label>
+                        <input type="email" id="email" name="email" required
+                            class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white">
+                    </div>
+                    
+                    <div class="pt-4">
+                        <button type="submit" 
+                            class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                            Complete Registration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
 
             document.body.appendChild(modal);
 
@@ -628,18 +813,18 @@
             if (connectedButton) {
                 connectedButton.classList.add('connected');
                 connectedButton.innerHTML = `
-            <div class="flex items-center">
-                <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
-                <span class="text-lg font-semibold">${shortAddress}</span>
-            </div>
-            <div class="flex items-center">
-                <span class="text-green-400 text-sm mr-2">Connected</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <button class="ml-2 text-red-400 text-sm disconnect-btn" data-wallet-type="${walletType}">Disconnect</button>
-            </div>
-        `;
+                <div class="flex items-center">
+                    <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
+                    <span class="text-lg font-semibold">${shortAddress}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-green-400 text-sm mr-2">Connected</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <button class="ml-2 text-red-400 text-sm disconnect-btn" data-wallet-type="${walletType}">Disconnect</button>
+                </div>
+            `;
 
                 connectedButton.querySelector('.disconnect-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -650,11 +835,11 @@
             const walletInfoHeader = document.getElementById('wallet-info-header');
             if (walletInfoHeader) {
                 walletInfoHeader.innerHTML = `
-            <div class="flex items-center">
-                <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-6 h-6 mr-2">
-                <span class="text-sm font-medium">${shortAddress}</span>
-            </div>
-        `;
+                <div class="flex items-center">
+                    <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-6 h-6 mr-2">
+                    <span class="text-sm font-medium">${shortAddress}</span>
+                </div>
+            `;
             }
         }
 
@@ -662,6 +847,9 @@
          * Get wallet icon path
          */
         function getWalletIconPath(walletType) {
+            if (walletType === 'trustwallet') {
+                return "https://altcoinsbox.com/wp-content/uploads/2023/03/trust-wallet-logo.png";
+            }
             return `/assets/wallet/${walletType.charAt(0).toUpperCase() + walletType.slice(1)}.png`;
         }
 
@@ -678,7 +866,10 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
                             'content')
-                    }
+                    },
+                    body: JSON.stringify({
+                        wallet_type: walletType
+                    })
                 });
 
                 const data = await response.json();
@@ -711,20 +902,20 @@
                 button.classList.remove('connected');
                 const walletType = button.id.replace('-btn', '');
                 button.innerHTML = `
-            <div class="flex items-center">
-                <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
-                <span class="text-lg font-semibold">${walletType.charAt(0).toUpperCase() + walletType.slice(1)}</span>
-            </div>
-        `;
+                <div class="flex items-center">
+                    <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
+                    <span class="text-lg font-semibold">${walletType.charAt(0).toUpperCase() + walletType.slice(1)}</span>
+                </div>
+            `;
             });
 
             const walletInfoHeader = document.getElementById('wallet-info-header');
             if (walletInfoHeader) {
                 walletInfoHeader.innerHTML = `
-            <div class="flex items-center">
-                <span class="text-sm font-medium">Connect Wallet</span>
-            </div>
-        `;
+                <div class="flex items-center">
+                    <span class="text-sm font-medium">Connect Wallet</span>
+                </div>
+            `;
             }
         }
 
@@ -736,12 +927,12 @@
             if (button) {
                 button.classList.add('loading');
                 button.innerHTML = `
-            <div class="flex items-center">
-                <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
-                <span class="text-lg font-semibold">Connecting...</span>
-            </div>
-            <div class="spinner"></div>
-        `;
+                <div class="flex items-center">
+                    <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
+                    <span class="text-lg font-semibold">Connecting...</span>
+                </div>
+                <div class="spinner"></div>
+            `;
             }
         }
 
@@ -751,11 +942,11 @@
                 button.classList.remove('loading');
                 if (!walletState.connected || walletState.type !== walletType) {
                     button.innerHTML = `
-                <div class="flex items-center">
-                    <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
-                    <span class="text-lg font-semibold">${walletType.charAt(0).toUpperCase() + walletType.slice(1)}</span>
-                </div>
-            `;
+                    <div class="flex items-center">
+                        <img src="${getWalletIconPath(walletType)}" alt="${walletType} Icon" class="w-8 h-8 mr-4">
+                        <span class="text-lg font-semibold">${walletType.charAt(0).toUpperCase() + walletType.slice(1)}</span>
+                    </div>
+                `;
                 }
             }
         }
@@ -789,11 +980,11 @@
                 loadingOverlay.id = 'loading-overlay';
                 loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
                 loadingOverlay.innerHTML = `
-            <div class="bg-darker rounded-xl p-8 flex items-center">
-                <div class="spinner mr-4"></div>
-                <span id="loading-message" class="text-white"></span>
-            </div>
-        `;
+                <div class="bg-darker rounded-xl p-8 flex items-center">
+                    <div class="spinner mr-4"></div>
+                    <span id="loading-message" class="text-white"></span>
+                </div>
+            `;
                 document.body.appendChild(loadingOverlay);
             }
 
@@ -826,12 +1017,12 @@
                 '<svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
 
             toast.innerHTML = `
-        ${icon}
-        <div class="text-sm font-normal">${message}</div>
-        <button type="button" class="ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 hover:bg-gray-700 inline-flex h-8 w-8 items-center justify-center">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-    `;
+            ${icon}
+            <div class="text-sm font-normal">${message}</div>
+            <button type="button" class="ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 hover:bg-gray-700 inline-flex h-8 w-8 items-center justify-center">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        `;
 
             toastContainer.appendChild(toast);
 
@@ -846,32 +1037,86 @@
             }, 5000);
         }
 
-        // Listen for Ethereum account changes
-        let hasRefreshed = false;
-
+        // Listen for wallet events
         if (window.ethereum) {
-            ethereum.on('accountsChanged', (accounts) => {
+            window.ethereum.on('accountsChanged', (accounts) => {
                 if (accounts.length === 0) {
-                    walletState.connected = false;
-                    walletState.address = null;
-                    localStorage.removeItem('walletState');
-                    resetWalletUI();
+                    if (walletState.type === 'metamask') {
+                        walletState.connected = false;
+                        walletState.address = null;
+                        localStorage.removeItem('walletState');
+                        resetWalletUI();
+                        showErrorMessage('MetaMask disconnected');
+                    }
                 } else {
                     const newAddress = accounts[0];
-                    if (walletState.connected && walletState.address !== newAddress) {
+                    if (walletState.connected && walletState.type === 'metamask' && walletState.address !==
+                        newAddress) {
                         connectWallet('metamask');
                     }
                 }
             });
 
-            ethereum.on('chainChanged', (chainId) => {
-                if (!hasRefreshed) {
-                    hasRefreshed = true;
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
+            window.ethereum.on('chainChanged', async (chainId) => {
+                if (walletState.connected && walletState.type === 'metamask') {
+                    walletState.chainId = chainId;
+                    localStorage.setItem('walletState', JSON.stringify(walletState));
+
+                    const desiredChainId = '0x1'; // Ethereum Mainnet
+                    if (chainId !== desiredChainId) {
+                        try {
+                            await switchNetwork(desiredChainId, window.ethereum);
+                        } catch (error) {
+                            showErrorMessage('Please switch to Ethereum Mainnet in your wallet.');
+                        }
+                    }
                 }
             });
+        }
+
+        if (window.trustwallet) {
+            window.trustwallet.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    if (walletState.type === 'trustwallet') {
+                        walletState.connected = false;
+                        walletState.address = null;
+                        localStorage.removeItem('walletState');
+                        resetWalletUI();
+                        showErrorMessage('Trust Wallet disconnected');
+                    }
+                } else {
+                    const newAddress = accounts[0];
+                    if (walletState.connected && walletState.type === 'trustwallet' && walletState.address !==
+                        newAddress) {
+                        connectWallet('trustwallet');
+                    }
+                }
+            });
+
+            window.trustwallet.on('chainChanged', async (chainId) => {
+                if (walletState.connected && walletState.type === 'trustwallet') {
+                    walletState.chainId = chainId;
+                    localStorage.setItem('walletState', JSON.stringify(walletState));
+
+                    const desiredChainId = '0x1'; // Ethereum Mainnet
+                    if (chainId !== desiredChainId) {
+                        try {
+                            await switchNetwork(desiredChainId, window.trustwallet);
+                        } catch (error) {
+                            showErrorMessage('Please switch to Ethereum Mainnet in your wallet.');
+                        }
+                    }
+                }
+            });
+
+if (window.ethereum && window.ethereum.selectedAddress) {
+  // Clear dApp connection manually
+  window.ethereum.request({
+    method: 'wallet_requestPermissions',
+    params: [{ eth_accounts: {} }],
+  }).catch(console.error);
+}
+
         }
     </script>
 @endpush

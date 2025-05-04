@@ -8,7 +8,7 @@ class Wallet extends Model
 {
 
 
-    protected $fillable = ['user_id','wallet_address','wallet_type','nonce'];
+    protected $fillable = ['user_id','wallet_address','wallet_type','nonce','status'];
 
     public function user() {
         return $this->belongsTo(User::class);

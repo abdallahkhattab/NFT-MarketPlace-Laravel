@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('wallets', function (Blueprint $table) {
+        Schema::create('profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('wallet_address')->nullable()->unique();
-            $table->string('wallet_type')->nullable();
-            $table->string('nonce')->nullable()->unique();
-            $table->string('nonce_generated_at')->nullable();
-            $table->enum('status',['connected','disconnected'])->nullable();
+            $table->string('bio')->nullable();
+            $table->string('avatar')->nullable();
+            $table->string('background_image')->nullable();
+            $table->string('personal_website')->nullable();
+            $table->string('twitter')->nullable();
+            $table->string('instagram')->nullable();
             $table->timestamps();
-        
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('wallets');
+        Schema::dropIfExists('profiles');
     }
 };

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Wallet;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\Auth\LoginRequest;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,20 +30,35 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('marketplace', absolute: false));
+        return redirect()->intended(route('my-public-profile', absolute: false));
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
-        Auth::guard('web')->logout();
+        $user = Auth::user();
 
+        if (!$user) {
+            return response()->json(['error' => 'Not authenticated'], 401);
+        }
+
+        // Update wallet status and clear nonce
+        Wallet::where('user_id', $user->id)->update([
+            'status' => 'disconnected',
+            'nonce' => null,
+            'nonce_generated_at' => null
+        ]);
+
+        // Log out the user
+        Auth::logout();
+
+        // Invalidate and regenerate session
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
+        
 
-        return redirect('/');
+       return redirect()->route('home');
     }
 }
