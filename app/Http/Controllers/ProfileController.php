@@ -33,13 +33,6 @@ class ProfileController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validated();
-
-        $data['user_id'] = Auth::id();
-        
-        Profile::create($data);
-
-        return redirect()->back()->with(['message'=> 'success']);
     }
 
     /**
@@ -84,7 +77,7 @@ class ProfileController extends Controller
        
         $profile->update($data);
 
-        return redirect()->back()->with(['message'=> 'success']);
+        return redirect()->back()->with('success', 'Profile updated successfully.');
 
     }
 

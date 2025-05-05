@@ -32,6 +32,8 @@ class Profile extends Model
         if($this->background_image)
         {
             return asset('storage/' . $this->background_image);
+        }else{
+            return 'https://ui-avatars.com/api/?name=' . $this->user->name;
         }
     }
 }

@@ -32,8 +32,25 @@ class PublicProfileController extends Controller
         }
 
 
-        public function show(Request $request , User $user)
+        public function show(Request $request, User $user)
         {
-            return view('pages.profile.public-profile');
+            if (Auth::id() !== $user->id) {
+                abort(403, 'Unauthorized access to profile');
+            }
+            
+            $wallets = $user->wallet()->get(['wallet_address']);
+        
+            $fullAddress = null;
+            $shortAddress = null;
+        
+            if ($wallets->isNotEmpty()) {
+                $fullAddress = $wallets[0]->wallet_address;
+                $shortAddress = substr($fullAddress, 0, 6) . '...' . substr($fullAddress, -4);
+            }
+        
+            $profile = Profile::where('user_id', $user->id)->first();
+        
+            return view('pages.profile.public-profile', compact('user', 'fullAddress', 'shortAddress', 'profile'));
         }
+        
 }

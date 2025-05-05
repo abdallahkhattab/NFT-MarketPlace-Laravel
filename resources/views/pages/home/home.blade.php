@@ -1,4 +1,6 @@
 @extends('layouts.layout')
+
+
 @section('title','home')
 @section('content')
 <!-- Hero Section -->

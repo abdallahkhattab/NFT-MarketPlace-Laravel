@@ -145,7 +145,7 @@ class MetaMaskController extends Controller
         $validator = Validator::make($request->all(), [
             'wallet_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/',
             'signature' => 'required|string|regex:/^0x[a-fA-F0-9]{130}$/',
-            'wallet_type' => 'nullable|string|in:metamask,walletconnect,coinbase',
+            'wallet_type' => 'nullable|string|in:metamask,trustwallet,walletconnect,coinbase',
             'name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'status'=> 'nullable',
@@ -410,7 +410,7 @@ class MetaMaskController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Registration successful',
-                'redirect' => route('my-public-profile'),
+                'redirect' => route('marketplace'),
             ]);
         }
     }

@@ -37,7 +37,9 @@
                        <div class="truncate text-gray-500 dark:text-gray-400">{{ auth()->user()->email }}</div>
                    </div>
                    <ul class="py-2 text-sm text-gray-500 dark:text-gray-200">
-
+                    <li>
+                        <a href="{{ route('public-profile',['user'=>Auth()->user()->name]) }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">My Profile</a>
+                    </li>
                     @php
                         $profile = Auth::user()->profile;
                     @endphp
@@ -48,9 +50,7 @@
                         
                     @endif
                       
-                       <li>
-                           <a href="{{ route('public-profile',['user'=>Auth()->user()->name]) }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">My Profile</a>
-                       </li>
+                     
 
                        
                    </ul>
@@ -93,10 +93,10 @@
                    <p class="text-gray-400 text-sm truncate">{{ auth()->user()->email }}</p>
                </div>
            </div>
-           
+           <a href="{{ route('public-profile',['user'=>Auth()->user()->name]) }}" class="block text-gray-400  hover:text-light-purple py-2 pl-11">My Profile</a>
+
            <a href="" class="block text-gray-400  hover:text-light-purple py-2 pl-11">Edit Profile</a>
            
-            <a href="{{ route('public-profile',['user'=>Auth()->user()->name]) }}" class="block text-gray-400  hover:text-light-purple py-2 pl-11">My Profile</a>
        
            <form method="POST" action="{{ route('logout') }}" class="mt-2">
                @csrf

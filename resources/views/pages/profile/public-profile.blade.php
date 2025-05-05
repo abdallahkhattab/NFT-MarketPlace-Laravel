@@ -175,7 +175,7 @@
 <div class="bg-gray-900 text-white min-h-screen">
     <!-- Banner Image with parallax effect -->
     <div class="w-full relative overflow-hidden" id="banner-container">
-        <img src="{{ $profile->backgroundUrl() }}" alt="Profile Banner" class="w-full banner-img" id="parallax-banner">
+        <img src="{{ $profile->backgroundUrl()  }}" alt="" class="w-full banner-img" id="parallax-banner">
         
         <!-- Enhanced gradient overlay -->
         <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-700/40 to-purple-900/80"></div>
@@ -238,37 +238,30 @@
         <!-- Profile Bio -->
         <div class="mb-8 fade-in fade-in-1">
             <h2 class="text-2xl font-bold mb-4">Bio</h2>
-            <p class="text-gray-300">The Internet's Friendliest Designer Kid.</p>
+            <p class="text-gray-300">{{ $profile->bio ??'' }}</p>
         </div>
 
         <!-- Profile Links -->
         <div class="mb-8 fade-in fade-in-2">
             <h2 class="text-2xl font-bold mb-4">Links</h2>
             <div class="flex space-x-6">
-                <a href="#" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
+                <a href="{{ $profile->twitter ??'' }}" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
+                    <!-- Twitter/X icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+                    </svg>
+                </a>
+                <a href="{{ $profile->instagram }}" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
+                    <!-- Instagram icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153.509.5.902 1.105 1.153 1.772.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428-.251.667-.644 1.273-1.153 1.772-.556.555-1.113.899-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465-.667-.254-1.267-.598-1.772-1.153-.509-.5-.902-1.105-1.153-1.772-.247-.637-.415-1.363-.465-2.428-.047-1.066-.06-1.405-.06-4.122 0-2.717.01-3.056.06-4.122.05-1.065.218-1.79.465-2.428.251-.667.644-1.273 1.153-1.772.505-.555 1.105-.899 1.772-1.153.637-.247 1.363-.415 2.428-.465 1.066-.047 1.405-.06 4.122-.06M12 4c-2.173 0-2.445.01-3.298.048-.857.04-1.441.175-1.955.373-.526.206-.975.478-1.422.919-.45.444-.719.89-.925 1.416-.198.51-.333 1.096-.373 1.949-.04.852-.049 1.125-.049 3.296s.01 2.445.048 3.298c.04.853.175 1.433.373 1.942.206.526.478.975.925 1.419.444.444.895.716 1.422.922.51.198 1.093.333 1.955.373.854.04 1.125.049 3.298.049s2.445-.01 3.298-.048c.857-.04 1.441-.175 1.955-.373.526-.206.975-.478 1.422-.922.45-.444.719-.893.925-1.419.198-.51.333-1.09.373-1.942.04-.853.049-1.125.049-3.298s-.01-2.445-.048-3.296c-.04-.853-.175-1.44-.373-1.949-.206-.526-.478-.972-.925-1.416-.444-.444-.895-.713-1.422-.919-.51-.198-1.098-.333-1.955-.373C14.445 4.01 14.173 4 12 4z" />
+                        <circle cx="12" cy="12" r="3" stroke-width="2" />
+                    </svg>
+                </a>
+                <a href="{{ $profile->personal_website }}" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
+                    <!-- Website/Globe icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                    </svg>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
-                    </svg>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition transform hover:scale-110 duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </a>
             </div>

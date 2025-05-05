@@ -37,9 +37,10 @@ Route::get('markerplace',function(){
     return view('pages.marketplace.marketplace');
 })->name('marketplace')->middleware('auth');
 
+/*
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');*/
 
 /*
 Route::middleware('auth')->group(function () {
