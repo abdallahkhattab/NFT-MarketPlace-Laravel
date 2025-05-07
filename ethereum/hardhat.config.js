@@ -3,23 +3,36 @@ require("dotenv").config();
 
 const { ALCHEMY_SEPOLIA_API_KEY, SEPOLIA_PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
-if (!ALCHEMY_SEPOLIA_API_KEY || !SEPOLIA_PRIVATE_KEY || !ETHERSCAN_API_KEY) {
-  console.error("Please set all required environment variables.");
+// Validate environment variables
+if (!ALCHEMY_SEPOLIA_API_KEY) {
+  console.error("Error: ALCHEMY_SEPOLIA_API_KEY is not set in .env");
+  process.exit(1);
+}
+if (!SEPOLIA_PRIVATE_KEY) {
+  console.error("Error: SEPOLIA_PRIVATE_KEY is not set in .env");
+  process.exit(1);
+}
+if (!ETHERSCAN_API_KEY) {
+  console.error("Error: ETHERSCAN_API_KEY is not set in .env");
   process.exit(1);
 }
 
+// Validate private key format (64 hex chars, optionally with 0x)
 const cleanPrivateKey = SEPOLIA_PRIVATE_KEY.startsWith("0x") ? SEPOLIA_PRIVATE_KEY.slice(2) : SEPOLIA_PRIVATE_KEY;
 if (!/^[0-9a-fA-F]{64}$/.test(cleanPrivateKey)) {
-  console.error("Invalid SEPOLIA_PRIVATE_KEY format.");
+  console.error("Error: SEPOLIA_PRIVATE_KEY is invalid. Must be a 64-character hexadecimal string.");
   process.exit(1);
 }
 
 module.exports = {
   solidity: {
-    compilers: [
-      { version: "0.8.28" },
-      { version: "0.8.20" } // Add this to support OpenZeppelin contracts
-    ]
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
   },
   networks: {
     hardhat: {
@@ -28,8 +41,8 @@ module.exports = {
     sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_SEPOLIA_API_KEY}`,
       accounts: [`0x${cleanPrivateKey}`],
-    //  gasPrice: 8000000000,
-    gasLimit: 5000000 
+      maxFeePerGas: 6000000000, // 6 gwei
+      maxPriorityFeePerGas: 1000000000 // 1 gwei
     },
   },
   paths: {
