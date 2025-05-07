@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MetaMaskController;
+use App\Http\Controllers\NFtMarketPlaceController;
 use App\Http\Controllers\PublicProfileController;
 
 Route::post('/get-nonce', [MetaMaskController::class, 'getNonce'])->name('get.nonce'); // Get nonce for wallet
@@ -37,6 +38,8 @@ Route::get('markerplace',function(){
     return view('pages.marketplace.marketplace');
 })->name('marketplace')->middleware('auth');
 
+
+
 /*
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -58,7 +61,12 @@ Route::middleware('auth')->group(function () {
 Route::get('home' , [HomeController::class,'index'])->name('home');
 
 
+Route::get('/' , [HomeController::class,'index'])->name('home');
 
 
+
+Route::get('create-nft' , [NFtMarketPlaceController::class , 'create'])->name('create-nft');
+Route::post('/nft/upload-image', [NFTMarketplaceController::class, 'uploadImage'])->middleware('auth')->name('nft.upload-image');
+Route::post('/nft/create-metadata', [NFTMarketplaceController::class, 'createMetadata'])->middleware('auth')->name('nft.create-metadata');
 
 require __DIR__.'/auth.php';

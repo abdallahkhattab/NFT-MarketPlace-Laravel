@@ -60,6 +60,13 @@ return [
             'report' => false,
         ],
 
+        'contracts' => [
+            'driver' => 'local',
+            'root' => resource_path('contracts'),
+            'visibility' => 'private',
+        ],
+ 
+
     ],
 
     /*
