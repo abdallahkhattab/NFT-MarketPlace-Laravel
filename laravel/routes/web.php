@@ -25,6 +25,7 @@ Route::get('/ranking', function () {
     return view('pages.ranking.ranking');
 })->name('ranking');
 
+
 Route::get('register', function(){
     return view('auth.register');
 });
@@ -34,10 +35,9 @@ Route::get('connect-a-wallet',[MetaMaskController::class,'connect'])->name('wall
 
 Route::post('disconnect-wallet',[MetaMaskController::class,'disconnect']);
 
-Route::get('markerplace',function(){
-    return view('pages.marketplace.marketplace');
-})->name('marketplace')->middleware('auth');
 
+
+Route::get('marketplace' ,[NFtMarketPlaceController::class,'ListNft'])->middleware('auth')->name('marketplace');
 
 
 /*
@@ -58,14 +58,15 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::get('home' , [HomeController::class,'index'])->name('home');
+Route::get('home' , [NFtMarketPlaceController::class,'index'])->name('home');
 
 
-Route::get('/' , [HomeController::class,'index'])->name('home');
+
 
 
 
 Route::get('create-nft' , [NFtMarketPlaceController::class , 'create'])->name('create-nft');
+Route::get('nft' , [NFtMarketPlaceController::class , 'showNFT'])->name('show-nft');
 Route::post('/nft/upload-image', [NFTMarketplaceController::class, 'uploadImage'])->middleware('auth')->name('nft.upload-image');
 Route::post('/nft/create-metadata', [NFTMarketplaceController::class, 'createMetadata'])->middleware('auth')->name('nft.create-metadata');
 

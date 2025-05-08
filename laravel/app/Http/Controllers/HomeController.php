@@ -4,18 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Wallet;
-use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
+use App\Services\PinataService;
+use App\Services\NFTMarketplaceService;
+use Illuminate\Container\Attributes\Auth;
 
 class HomeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    protected $nftService;
+    protected $pinataService;
+    
+    public function __construct(NFTMarketplaceService $nftService, PinataService $pinataService)
     {
-        return view('pages.home.home');
+        $this->nftService = $nftService;
+        $this->pinataService = $pinataService;
     }
+
+    public function index(User $user)
+    {
+
+        $web3Config = $this->nftService->getWeb3Config();
+
+        return view('pages.home.home',[
+            'web3Config'=> $web3Config,
+        ]);
+    }
+
+
+
+
+
+   
 
     /**
      * Show the form for creating a new resource.

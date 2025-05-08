@@ -24,7 +24,7 @@ class NFtMarketPlaceController extends Controller
     {
         $web3Config = $this->nftService->getWeb3Config();
         
-        return view('nft.marketplace', [
+        return view('pages.home.home', [
             'web3Config' => $web3Config
         ]);
     }
@@ -38,6 +38,27 @@ class NFtMarketPlaceController extends Controller
         
         return view('nft.my-nfts', [
             'web3Config' => $web3Config
+        ]);
+    }
+
+
+    public function ListNft()
+    {
+        $web3Config = $this->nftService->getWeb3Config();
+
+       return view('pages.marketplace.marketplace',[
+        'web3Config'=> $web3Config,
+       ]);
+    }
+
+
+    public function showNFT()
+    {
+        
+        $web3Config = $this->nftService->getWeb3Config();
+
+        return view('pages.NFT.show', [
+           'web3config' => $web3Config,  
         ]);
     }
     
