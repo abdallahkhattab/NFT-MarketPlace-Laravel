@@ -96,7 +96,7 @@
                     tokenId: 1,
                     name: 'this is my first nft #1',
                     description: 'SPACE NFT SUPER UNIQUE',
-                    image: 'https://beige-main-louse-684.mypinata.cloud/ipfs/QmNWkwcj8G8PKNjE4bqDh6qC9Z5yeHPPej5zV8hvjKna6C',
+                    image: 'https://ipfs.io/ipfs/QmNWkwcj8G8PKNjE4bqDh6qC9Z5yeHPPej5zV8hvjKna6C',
                     price: '0.1',
                     seller: '0x1f3A2a3D9525b54DbF180365971f28B44fD8a1B2',
                     category: 'Art'
@@ -132,13 +132,13 @@
                     card.style.animationDelay = `${0.1 * (index + 1)}s`;
                     card.innerHTML = `
                         <div class="h-64 overflow-hidden">
-                            <img src="${nft.image}" alt="${nft.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x400?text=Image+Error';">
+                            <img src="${nft.image}" alt="${nft.name}" class="w-full h-full object-cover" onerror="this.src='#';">
                         </div>
                         <div class="p-5">
                             <h3 class="text-xl font-bold mb-3">${nft.name}</h3>
                             <div class="flex items-center mb-4">
                                 <div class="w-8 h-8 rounded-full overflow-hidden bg-primary">
-                                    <img src="https://via.placeholder.com/50/50?text=${nft.seller.slice(2, 4)}" alt="${nft.seller}" class="w-full h-full object-cover">
+                                    <img src="https://ui-avatars.com/api/?name='${nft.seller.slice(2, 4)}" alt="${nft.seller}" class="w-full h-full object-cover">
                                 </div>
                                 <span class="ml-2 text-gray-300">${nft.seller.slice(0, 6)}...${nft.seller.slice(-4)}</span>
                             </div>
@@ -159,6 +159,7 @@
             }
 
            
+            renderNFTs(staticNFTs);
 
         });
     </script>

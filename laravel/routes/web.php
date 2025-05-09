@@ -17,6 +17,7 @@ Route::post('/authenticate', [MetaMaskController::class, 'authenticate'])->name(
 
 
 Route::get('/profile/@{user:name}',[PublicProfileController::class,'index'])->name('public-profile');
+
 Route::get('/myprofile/@{user:name}',[PublicProfileController::class,'show'])->name('my-public-profile');
 
 
@@ -66,7 +67,7 @@ Route::get('home' , [NFtMarketPlaceController::class,'index'])->name('home');
 
 
 Route::get('create-nft' , [NFtMarketPlaceController::class , 'create'])->name('create-nft');
-Route::get('nft' , [NFtMarketPlaceController::class , 'showNFT'])->name('show-nft');
+Route::get('nft/nft-details/{tokenId}' , [NFtMarketPlaceController::class , 'showNFT'])->name('nft.show');
 Route::post('/nft/upload-image', [NFTMarketplaceController::class, 'uploadImage'])->middleware('auth')->name('nft.upload-image');
 Route::post('/nft/create-metadata', [NFTMarketplaceController::class, 'createMetadata'])->middleware('auth')->name('nft.create-metadata');
 

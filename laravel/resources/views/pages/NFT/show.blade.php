@@ -1,7 +1,7 @@
 
 @extends('layouts.layout')
 
-@section('title', 'NFT Marketplace - The Orbitians')
+@section('title', $nft['name'] . ' - NFT Marketplace')
 
 @push('styles')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -107,9 +107,9 @@
         <!-- Main NFT Image -->
         <div class="mb-12">
             <div class="holographic-card rounded-lg overflow-hidden flex justify-center relative">
-                <img src="{{ asset('assets/nft_images/Trending.png') }}" alt="The Orbitians NFT" class="max-w-full max-h-[40rem] object-contain py-4 cursor-pointer nft-image" onclick="openModal(this.src)">
+                <img id="nft-image" src="{{ $nft['image'] }}" alt="{{ $nft['name'] }}" class="max-w-full max-h-[40rem] object-contain py-4 cursor-pointer nft-image">
                 <div class="absolute top-4 right-4 flex space-x-2">
-                    <button class="bg-gray-900 hover:bg-gray-800 text-white p-2 rounded-lg" onclick="openModal('{{ asset('assets/nft_images/Trending.png') }}')">
+                    <button class="bg-gray-900 hover:bg-gray-800 text-white p-2 rounded-lg" onclick="openModal(document.getElementById('nft-image').src)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="M21 21l-4.35-4.35"></path>
@@ -124,8 +124,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column with NFT Info -->
             <div class="lg:col-span-2">
-                <h1 class="text-5xl font-bold neon-text mb-2">The Orbitians</h1>
-                <p class="text-gray-400 mb-6">Minted on Sep 30, 2022 | Token ID: #1001</p>
+                <h1 id="nft-name" class="text-5xl font-bold neon-text mb-2">{{ $nft['name'] }}</h1>
+                <p id="nft-details" class="text-gray-400 mb-6">Token ID: #{{ $nft['tokenId'] }}</p>
                 
                 <div class="mb-6">
                     <p class="text-gray-400">Created By</p>
@@ -133,17 +133,16 @@
                         <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center mr-2">
                             <span class="text-sm">🛸</span>
                         </div>
-                        <span class="font-medium text-purple-300 hover:text-purple-100">Orbitian</span>
+                        <span id="nft-seller" class="font-medium text-purple-300 hover:text-purple-100">{{ substr($nft['seller'], 0, 6) . '...' . substr($nft['seller'], -4) }}</span>
                     </div>
                 </div>
                 
                 <div class="mb-6">
                     <h2 class="text-gray-400 mb-2 text-xl">Description</h2>
-                    <div class="space-y-4 text-gray-200">
-                        <p>The Orbitians are 10,000 unique NFTs on the Ethereum blockchain, representing advanced beings from a cosmic civilization.</p>
-                        <p>Living in orbiting metal constructs, they maintain a single foothold on Earth, embodying peace and innovation.</p>
-                        <p>Engaged in an ancient war with the Upside-Downs, a rival faction, the Orbitians protect their celestial domain.</p>
-                        <p>Each NFT is a portal to their universe, encoded with unique traits and stored immutably on-chain.</p>
+                    <div id="nft-description" class="space-y-4 text-gray-200">
+                        @foreach(explode("\n", $nft['description']) as $paragraph)
+                            <p>{{ $paragraph }}</p>
+                        @endforeach
                     </div>
                 </div>
                 
@@ -152,31 +151,30 @@
                     <div class="space-y-2">
                         <div class="flex items-center">
                             <i class="fas fa-globe mr-2 text-purple-400"></i>
-                            <a href="https://etherscan.io" target="_blank" class="text-gray-300 hover:text-purple-400">View on Etherscan</a>
+                            <a id="etherscan-link" href="https://sepolia.etherscan.io/token/{{ $web3config['contractAddress'] }}?a={{ $nft['tokenId'] }}" target="_blank" class="text-gray-300 hover:text-purple-400">View on Etherscan</a>
                         </div>
                         <div class="flex items-center">
                             <i class="fas fa-file-alt mr-2 text-purple-400"></i>
-                            <a href="#" class="text-gray-300 hover:text-purple-400">View Metadata on IPFS</a>
+                            <a id="ipfs-link" href="#" class="text-gray-300 hover:text-purple-400">View Metadata on IPFS</a>
                         </div>
                     </div>
                 </div>
                 
                 <div>
                     <h2 class="text-gray-400 mb-2 text-xl">Tags</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-purple-500 text-purple-300">ANIMATION</span>
-                        <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-blue-500 text-blue-300">ILLUSTRATION</span>
+                    <div id="nft-tags" class="flex flex-wrap gap-2">
+                        <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-purple-500 text-purple-300">{{ strtoupper($nft['category']) }}</span>
+                        <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-blue-500 text-blue-300">BLOCKCHAIN</span>
                         <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-pink-500 text-pink-300">COSMOS</span>
-                        <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-purple-500 text-purple-300">BLOCKCHAIN</span>
                     </div>
                 </div>
             </div>
             
-            <!-- Right Column with Auction Info -->
+            <!-- Right Column with Purchase Info -->
             <div>
                 <div class="holographic-card rounded-lg p-6 relative overflow-hidden">
                     <div class="mb-4">
-                        <p class="text-gray-400 mb-2 text-lg">Auction Ends In:</p>
+                        <p class="text-gray-400 mb-2 text-lg">Available Until:</p>
                         <div class="flex justify-between text-center text-purple-300">
                             <div>
                                 <p id="hours" class="text-3xl font-bold glitch">00</p>
@@ -194,8 +192,12 @@
                             </div>
                         </div>
                     </div>
-                    <button class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium py-3 px-4 rounded-lg transition transform hover:scale-105">
-                        <i class="fas fa-wallet mr-2"></i> Connect Wallet to Bid
+                    <div class="mb-4">
+                        <p class="text-gray-400 mb-2 text-lg">Price:</p>
+                        <p id="nft-price" class="text-2xl font-bold text-purple-300">{{ number_format($nft['price'], 3) }} ETH</p>
+                    </div>
+                    <button id="buyButton" class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium py-3 px-4 rounded-lg transition transform hover:scale-105">
+                        <i class="fas fa-wallet mr-2"></i> Connect Wallet to Buy
                     </button>
                 </div>
             </div>
@@ -204,12 +206,12 @@
     
     <!-- Galactic Map Section -->
     <div class="container mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold neon-text mb-6 text-center">Galactic Map of The Orbitians</h2>
+        <h2 class="text-3xl font-bold neon-text mb-6 text-center">Galactic Map of NFTs</h2>
         <div class="relative h-96 bg-gray-900 rounded-lg overflow-hidden">
             <div class="absolute inset-0 bg-[url('/img/galaxy-bg.jpg')] bg-cover opacity-30"></div>
             <div class="absolute inset-0 flex items-center justify-center">
                 <div class="text-center text-gray-200">
-                    <p class="text-xl mb-4">Explore the Orbitians' Universe</p>
+                    <p class="text-xl mb-4">Explore the NFT Universe</p>
                     <p>Interactive map coming soon! Discover NFT collections across the cosmos.</p>
                 </div>
             </div>
@@ -220,45 +222,18 @@
     <div class="container mx-auto px-4 py-12">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-3xl font-bold neon-text">More From This Artist</h2>
-            <a href="#" class="border border-purple-500 rounded-lg px-6 py-2 flex items-center hover:bg-purple-500 hover:text-white transition">
-                <span>Go To Artist Page</span>
-                <span class="ml-2">→</span>
-            </a>
+            @if($artist)
+                <a href="{{ route('public-profile', ['user' => $artist->name]) }}" class="border border-purple-500 rounded-lg px-6 py-2 flex items-center hover:bg-purple-500 hover:text-white transition">
+                    <span>Go To Artist Page</span>
+                    <span class="ml-2">→</span>
+                </a>
+            @else
+                <span class="text-gray-400">Artist profile not available</span>
+            @endif
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- NFT Card 1 (Using Provided Metadata) -->
-            <div class="holographic-card rounded-lg overflow-hidden relative group">
-                <div class="relative pb-[100%] bg-gray-900">
-                    <img src="https://beige-main-louse-684.mypinata.cloud/ipfs/QmNWkwcj8G8PKNjE4bqDh6qC9Z5yeHPPej5zV8hvjKna6C" alt="this is my first nft #1" class="absolute inset-0 w-full h-full object-contain p-2 cursor-pointer nft-image" onclick="openModal(this.src)">
-                </div>
-                <div class="p-4">
-                    <h3 class="text-lg font-bold mb-2 neon-text">this is my first nft #1</h3>
-                    <div class="flex items-center mb-4">
-                        <div class="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center mr-2">
-                            <span class="text-xs">🛸</span>
-                        </div>
-                        <span class="text-sm text-gray-300">Orbitian</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <div>
-                            <p class="text-gray-400">Price</p>
-                            <p class="text-purple-300">0.1 ETH</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-gray-400">Highest Bid</p>
-                            <p class="text-blue-300">0.05 wETH</p>
-                        </div>
-                    </div>
-                    <div class="absolute inset-0 bg-gray-900 bg-opacity-90 opacity-0 group-hover:opacity-100 transition-opacity p-4 text-gray-200">
-                        <p class="text-sm">Token ID: #1</p>
-                        <p class="text-sm">Blockchain: Ethereum</p>
-                        <p class="text-sm truncate">Contract: 0x1f3A2a3D9525b54DbF180365971f28B44fD8a1B2</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- NFT Card 2 -->
+            <!-- Placeholder NFT Card -->
             <div class="holographic-card rounded-lg overflow-hidden relative group">
                 <div class="relative pb-[100%] bg-gray-900">
                     <img src="/img/nft/cat-future.jpg" alt="Cat From Future" class="absolute inset-0 w-full h-full object-contain p-2 cursor-pointer nft-image" onclick="openModal(this.src)">
@@ -269,7 +244,7 @@
                         <div class="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center mr-2">
                             <span class="text-xs">🛸</span>
                         </div>
-                        <span class="text-sm text-gray-300">Orbitian</span>
+                        <span class="text-sm text-gray-300">{{ substr($nft['seller'], 0, 6) . '...' . substr($nft['seller'], -4) }}</span>
                     </div>
                     <div class="flex justify-between text-sm">
                         <div>
@@ -284,38 +259,7 @@
                     <div class="absolute inset-0 bg-gray-900 bg-opacity-90 opacity-0 group-hover:opacity-100 transition-opacity p-4 text-gray-200">
                         <p class="text-sm">Token ID: #2</p>
                         <p class="text-sm">Blockchain: Ethereum</p>
-                        <p class="text-sm truncate">Contract: 0x2b4A5c6E8743c54Ec281469872f29C33eE9b2C1</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- NFT Card 3 -->
-            <div class="holographic-card rounded-lg overflow-hidden relative group">
-                <div class="relative pb-[100%] bg-gray-900">
-                    <img src="/img/nft/psycho-dog.jpg" alt="Psycho Dog" class="absolute inset-0 w-full h-full object-contain p-2 cursor-pointer nft-image" onclick="openModal(this.src)">
-                </div>
-                <div class="p-4">
-                    <h3 class="text-lg font-bold mb-2 neon-text">Psycho Dog</h3>
-                    <div class="flex items-center mb-4">
-                        <div class="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center mr-2">
-                            <span class="text-xs">🛸</span>
-                        </div>
-                        <span class="text-sm text-gray-300">Orbitian</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <div>
-                            <p class="text-gray-400">Price</p>
-                            <p class="text-purple-300">1.63 ETH</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-gray-400">Highest Bid</p>
-                            <p class="text-blue-300">0.33 wETH</p>
-                        </div>
-                    </div>
-                    <div class="absolute inset-0 bg-gray-900 bg-opacity-90 opacity-0 group-hover:opacity-100 transition-opacity p-4 text-gray-200">
-                        <p class="text-sm">Token ID: #3</p>
-                        <p class="text-sm">Blockchain: Ethereum</p>
-                        <p class="text-sm truncate">Contract: 0x3c5B7d8F9654d65Fd392580983f40D44fF0c3D2</p>
+                        <p class="text-sm truncate">Contract: {{ $web3config['contractAddress'] }}</p>
                     </div>
                 </div>
             </div>
@@ -331,15 +275,282 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="toast">Image saving is disabled to protect NFT ownership.</div>
+    <div id="toast" class="toast"></div>
 </div>
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 <script>
+// Web3 Configuration
+const web3Config = @json($web3config);
+const tokenId = {{ $nft['tokenId'] }};
+let provider, signer, contract;
+let nftData = @json($nft);
+
+// Initialize Web3
+async function initWeb3() {
+    if (!window.ethereum) {
+        showToast('MetaMask is not installed. Please install MetaMask to proceed.');
+        return false;
+    }
+    try {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const network = await provider.getNetwork();
+        if (network.chainId !== 11155111) { // Sepolia
+            showToast('Please switch MetaMask to the Sepolia network.');
+            return false;
+        }
+        signer = provider.getSigner();
+        contract = new ethers.Contract(
+            web3Config.contractAddress,
+            web3Config.contractABI,
+            signer
+        );
+        return true;
+    } catch (error) {
+        console.error('Web3 initialization failed:', error);
+        showToast('Failed to connect to blockchain. Please try again.');
+        return false;
+    }
+}
+
+// Fetch with CORS proxy
+async function fetchWithCorsProxy(ipfsUrl) {
+    const corsProxies = [
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
+        'https://thingproxy.freeboard.io/fetch/'
+    ];
+
+    for (const proxy of corsProxies) {
+        try {
+            console.log(`Trying CORS proxy: ${proxy} for URL: ${ipfsUrl}`);
+            const response = await fetch(`${proxy}${encodeURIComponent(ipfsUrl)}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.name && data.description && data.image) {
+                    console.log('Successfully fetched with CORS proxy:', data);
+                    return data;
+                }
+            }
+        } catch (error) {
+            console.error(`Proxy ${proxy} failed for URL ${ipfsUrl}:`, error.message);
+        }
+    }
+    console.error('All CORS proxies failed for URL:', ipfsUrl);
+    return null;
+}
+
+// Fetch metadata from IPFS
+async function fetchMetadata(ipfsHash) {
+    const dedicatedGateway = `https://ipfs.io/ipfs/${ipfsHash}`;
+    const pinataJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI1Mzg2ZDA2MS0zZmE2LTRiNDktOWY2YS0yOTQxNmJhZjRlODkiLCJlbWFpbCI6ImJvb2R5a2hhdHRhYjk3QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiIyZTcwYTAzZWMzN2VmYjAzMjkxOCIsInNjb3BlZEtleVNlY3JldCI6IjdmY2FjOGQzNGQ1NDRmM2I1NmU3ZWQ4N2RjNmI2NzVjNzdiNWFlMGNmYmZmYjMwODc2YTljZjVhZDZjMmJlYTIiLCJleHAiOjE3NzgxNTY3OTh9.vtlL2PhURiG6NKVTbsoKPkaUJJgIy67iTZwdkR6ig5M';
+
+    // Try CORS proxy
+    const corsMetadata = await fetchWithCorsProxy(dedicatedGateway);
+    if (corsMetadata) {
+        console.log(`Metadata fetched via CORS proxy for token ${tokenId}`);
+        return corsMetadata;
+    }
+
+    // Try dedicated Pinata gateway
+    try {
+        console.log(`Trying dedicated Pinata gateway for token ${tokenId}: ${dedicatedGateway}`);
+        const response = await axios.get(dedicatedGateway, {
+            timeout: 10000,
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${pinataJwt}`
+            }
+        });
+        if (response.data && response.data.name && response.data.description && response.data.image) {
+            console.log(`Successfully fetched metadata from dedicated gateway for token ${tokenId}`);
+            return response.data;
+        }
+    } catch (error) {
+        console.warn(`Dedicated gateway failed for token ${tokenId}:`, error.message);
+    }
+
+    // Fallback metadata
+    console.warn(`All fetch attempts failed for token ${tokenId}. Using fallback metadata.`);
+    showToast(`Unable to load metadata for Token #${tokenId}.`);
+    return {
+        name: `Token #${tokenId}`,
+        description: "Metadata unavailable",
+        image: "https://via.placeholder.com/400x400?text=NFT+Image",
+        category: "Unknown",
+        isFallback: true
+    };
+}
+
+// Fetch and display NFT details
+async function loadNFTDetails() {
+    const initialized = await initWeb3();
+    if (!initialized) {
+        return;
+    }
+
+    try {
+        console.log(`Fetching details for token ID: ${tokenId}`);
+        const tokenURI = await contract.tokenURI(tokenId);
+        console.log(`Token URI for token ${tokenId}: ${tokenURI}`);
+        if (!tokenURI || !tokenURI.startsWith('ipfs://')) {
+            console.warn(`Invalid or empty tokenURI for token ${tokenId}: ${tokenURI}`);
+            showToast(`Invalid metadata URI for Token #${tokenId}.`);
+            return;
+        }
+
+        const ipfsHash = tokenURI.replace('ipfs://', '');
+        const metadata = await fetchMetadata(ipfsHash);
+        if (!metadata) {
+            console.warn(`No valid metadata for token ${tokenId}`);
+            return;
+        }
+
+        // Fetch price and seller
+        let price = '0.0';
+        let seller = 'Unknown';
+        try {
+            const nftDetails = await contract.getAllNFTs();
+            const token = nftDetails.find(t => t.tokenId.toNumber() === parseInt(tokenId));
+            if (token) {
+                price = ethers.utils.formatEther(token.price);
+                seller = token.seller;
+            }
+        } catch (error) {
+            console.error('Failed to fetch NFT details:', error);
+        }
+
+        // Update nftData
+        nftData = {
+            tokenId: tokenId,
+            name: metadata.name,
+            description: metadata.description,
+            image: metadata.image.startsWith('ipfs://') 
+                ? `https://ipfs.io/ipfs/${metadata.image.replace('ipfs://', '')}`
+                : metadata.image,
+            category: metadata.category || 'Art',
+            price: price,
+            seller: seller,
+            mintedAt: '' // Adjust if contract provides this
+        };
+
+        // Update DOM
+        document.getElementById('nft-name').textContent = nftData.name;
+        document.getElementById('nft-image').src = nftData.image;
+        document.getElementById('nft-image').alt = nftData.name;
+        document.getElementById('nft-details').textContent = `Minted on ${nftData.mintedAt} | Token ID: #${nftData.tokenId}`;
+        document.getElementById('nft-seller').textContent = nftData.seller ? `${nftData.seller.slice(0, 6)}...${nftData.seller.slice(-4)}` : 'Unknown';
+        document.getElementById('nft-price').textContent = `${parseFloat(nftData.price).toFixed(3)} ETH`;
+        document.getElementById('etherscan-link').href = `https://sepolia.etherscan.io/token/${web3Config.contractAddress}?a=${nftData.tokenId}`;
+        document.getElementById('ipfs-link').href = nftData.image.startsWith('https://ipfs.io/ipfs') 
+            ? nftData.image 
+            : `https://ipfs.io/ipfs/${ipfsHash}`;
+
+        // Update description
+        const descriptionDiv = document.getElementById('nft-description');
+        descriptionDiv.innerHTML = '';
+        nftData.description.split('\n').forEach(para => {
+            const p = document.createElement('p');
+            p.textContent = para;
+            descriptionDiv.appendChild(p);
+        });
+
+        // Update tags
+        const tagsDiv = document.getElementById('nft-tags');
+        tagsDiv.innerHTML = `
+            <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-purple-500 text-purple-300">${nftData.category.toUpperCase()}</span>
+            <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-blue-500 text-blue-300">BLOCKCHAIN</span>
+            <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-pink-500 text-pink-300">COSMOS</span>
+        `;
+    } catch (error) {
+        console.error(`Error loading NFT #${tokenId}:`, error);
+        showToast(`Failed to load NFT details: ${error.message}`);
+    }
+}
+
+// Buy NFT
+async function buyNFT() {
+    if (!contract || !signer) {
+        showToast('Wallet not connected. Please connect MetaMask.');
+        return;
+    }
+    try {
+        // Step 1: Validate price
+        if (!nftData.price || parseFloat(nftData.price) <= 0) {
+            showToast('Invalid NFT price.');
+            return;
+        }
+
+        // Step 2: Get wallet balance
+        const walletAddress = await signer.getAddress();
+        const balance = await provider.getBalance(walletAddress);
+        const balanceInEth = ethers.utils.formatEther(balance);
+        showToast(`Wallet balance: ${parseFloat(balanceInEth).toFixed(3)} ETH`, 'info');
+
+        // Step 3: Estimate gas
+        const priceInWei = ethers.utils.parseEther(nftData.price.toString());
+        let gasEstimate;
+        try {
+            gasEstimate = await contract.estimateGas.executeSale(nftData.tokenId, { value: priceInWei });
+        } catch (error) {
+            console.error('Gas estimation failed:', error);
+            gasEstimate = ethers.BigNumber.from('200000'); // Fallback gas limit
+            showToast('Gas estimation failed. Using default gas limit.', 'info');
+        }
+
+        // Step 4: Calculate total cost (price + gas)
+        const gasPrice = await provider.getGasPrice();
+        const gasCost = gasEstimate.mul(gasPrice);
+        const totalCost = priceInWei.add(gasCost);
+        const totalCostInEth = ethers.utils.formatEther(totalCost);
+
+        // Step 5: Check if balance is sufficient
+        if (balance.lt(totalCost)) {
+            showToast(`Insufficient funds. Need ${parseFloat(totalCostInEth).toFixed(3)} ETH, but only have ${parseFloat(balanceInEth).toFixed(3)} ETH. Please fund your wallet using a Sepolia faucet (e.g., https://sepolia-faucet.alchemy.com).`, 'error');
+            return;
+        }
+
+        // Step 6: Execute transaction
+        showToast('Initiating purchase. Please confirm in MetaMask...', 'info');
+        const tx = await contract.executeSale(nftData.tokenId, { 
+            value: priceInWei,
+            gasLimit: gasEstimate.mul(115).div(100) // 15% buffer
+        });
+        
+        // Step 7: Wait for confirmation
+        showToast('Transaction submitted. Waiting for confirmation...', 'info');
+        await tx.wait();
+
+        // Step 8: Success
+        showToast(`Successfully purchased Token #${nftData.tokenId}!`, 'success');
+    } catch (error) {
+        console.error('Error purchasing NFT:', error);
+        let message = 'Failed to purchase NFT.';
+        if (error.code === 4001) {
+            message = 'Transaction rejected by user.';
+        } else if (error.message.includes('insufficient funds')) {
+            message = 'Insufficient funds. Please add more ETH to your wallet.';
+        } else if (error.reason) {
+            message = `Error: ${error.reason}`;
+        } else if (error.code === -32603) {
+            message = 'Network error. Please try again later.';
+        }
+        showToast(message, 'error');
+    }
+}
+
 // Particle Background Animation
 function createParticles() {
     const particleBg = document.getElementById('particle-bg');
+    if (!particleBg) return;
     for (let i = 0; i < 50; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -394,12 +605,14 @@ function closeModal() {
 }
 
 // Show Toast Notification
-function showToast() {
+function showToast(message, type = 'error') {
     const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type === 'success' ? 'bg-green-500' : type === 'info' ? 'bg-blue-500' : 'bg-red-500'} bg-opacity-20 border-${type === 'success' ? 'green' : type === 'info' ? 'blue' : 'red'}-500`;
     toast.classList.add('show');
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 3000);
+    }, 5000); // Extended to 5s for longer messages
 }
 
 // Disable Context Menu on NFT Images
@@ -408,13 +621,13 @@ function disableContextMenu() {
     nftImages.forEach(img => {
         img.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            showToast();
+            showToast('Image saving is disabled to protect NFT ownership.');
         });
     });
 }
 
 // Card Tilt Effect and Initialization
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     createParticles();
     updateTimer();
     setInterval(updateTimer, 1000);
@@ -450,16 +663,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Make all NFT images clickable
-    const mainImage = document.querySelector('[alt="The Orbitians NFT"]');
-    if (mainImage) {
-        mainImage.classList.add('cursor-pointer');
-    }
+    // Load NFT details
+    await loadNFTDetails();
 
-    const galleryImages = document.querySelectorAll('.grid .holographic-card img');
-    galleryImages.forEach(img => {
-        img.classList.add('cursor-pointer');
-    });
+    // Initialize buy button
+    const buyButton = document.getElementById('buyButton');
+    if (buyButton) {
+        buyButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const initialized = await initWeb3();
+            if (initialized) {
+                await buyNFT();
+            }
+        });
+    }
 });
 </script>
 @endpush

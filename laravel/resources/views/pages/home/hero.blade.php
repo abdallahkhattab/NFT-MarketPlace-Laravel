@@ -38,7 +38,7 @@
         <div class="holographic-card rounded-2xl overflow-hidden relative group" data-id="featured-nft">
             <div class="relative h-[400px] md:h-[500px] bg-gray-900">
                 <div class="orb-animation"></div>
-                <img src="https://beige-main-louse-684.mypinata.cloud/ipfs/QmNWkwcj8G8PKNjE4bqDh6qC9Z5yeHPPej5zV8hvjKna6C" 
+                <img src="https://ipfs.io/ipfs/QmNWkwcj8G8PKNjE4bqDh6qC9Z5yeHPPej5zV8hvjKna6C" 
                      alt="this is my first nft #1" 
                      class="absolute inset-0 w-full h-full object-contain p-4 cursor-pointer nft-image" 
                      onclick="openModal(this.src)">
@@ -59,7 +59,7 @@
                 <div class="absolute inset-0 bg-gray-900 bg-opacity-90 opacity-0 group-hover:opacity-100 transition-opacity p-4 text-gray-200 flex flex-col justify-end">
                     <p class="text-sm">Blockchain: Ethereum</p>
                     <p class="text-sm truncate">Contract: 0x1f3A2a3D9525b54DbF180365971f28B44fD8a1B2</p>
-                    <p class="text-sm">Minted: Sep 30, 2022</p>
+                    <p class="text-sm">Minted: May 6, 2025</p>
                 </div>
             </div>
         </div>
@@ -74,7 +74,6 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="toast">Image saving is disabled to protect NFT ownership.</div>
 </section>
 
 @push('styles')
@@ -82,9 +81,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-    body {
-        font-family: 'Orbitron', sans-serif;
-    }
+ 
     .neon-text {
         text-shadow: 0 0 5px #a259ff, 0 0 10px #3b82f6;
     }

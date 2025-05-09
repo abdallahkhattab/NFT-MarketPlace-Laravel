@@ -7,8 +7,8 @@
                 </div>
                 <a href="#" class="text-white font-bold text-lg">NFT Marketplace</a>
             </div>
-            <p class="text-gray-400 mb-4">NFT Marketplace UI crafted with Anima for Figma.</p>
-            <p class="text-gray-400 mb-4">Join Our Community</p>
+            <p class="text-gray-400 mb-4">NFT Marketplace Developed by </p>
+            <p class="text-gray-400 mb-4">DEV:Abdallah Khattab</p>
             <div class="flex space-x-4">
                 <a href="#" class="text-gray-400 hover:text-light-purple transition-colors">
                     <i class="fab fa-discord text-xl"></i>
@@ -47,6 +47,6 @@
     </div>
     
     <div class="container mx-auto mt-10 pt-6 border-t border-gray-700 text-gray-400 text-sm">
-        <p>© NFT Marketplace. Use this template freely.</p>
+        <p>© NFT Marketplace.</p>
     </div>
 </footer>

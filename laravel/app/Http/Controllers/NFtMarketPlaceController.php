@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Web3\Web3;
+use Web3\Utils;
+use Web3\Contract;
 use Illuminate\Http\Request;
 use App\Services\PinataService;
 use App\Services\NFTMarketplaceService;
@@ -52,16 +55,36 @@ class NFtMarketPlaceController extends Controller
     }
 
 
-    public function showNFT()
-    {
-        
-        $web3Config = $this->nftService->getWeb3Config();
-
-        return view('pages.NFT.show', [
-           'web3config' => $web3Config,  
-        ]);
-    }
-    
+ /**
+     * Display specific NFT details
+     */
+  
+     public function showNFT($tokenId)
+     {
+         $web3Config = $this->nftService->getWeb3Config();
+     
+         // Get seller data
+     
+         // Minimal NFT data to pass to view
+         $nftData = [
+             'tokenId' => $tokenId,
+             'name' => "Token #{$tokenId}",
+             'description' => 'Loading metadata...',
+             'image' => 'https://via.placeholder.com/400x400?text=Loading+NFT',
+             'category' => 'Unknown',
+             'price' => '0.0',
+             'seller' => 'Unknown',  // Pass seller info here
+             'mintedAt' => 'Unknown',
+         ];
+         $artist = null;
+         
+         return view('pages.NFT.show', [
+             'web3config' => $web3Config,
+             'nft' => $nftData,
+             'artist'=> $artist,
+         ]);
+     }
+             
     /**
      * Display create NFT form
      */

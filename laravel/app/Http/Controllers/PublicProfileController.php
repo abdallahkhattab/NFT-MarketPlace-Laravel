@@ -2,18 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Profile;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\Profile;
 use Illuminate\Http\Request;
+use App\Services\PinataService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\NFTMarketplaceService;
 
 class PublicProfileController extends Controller
 {
+
+    protected $nftService;
+    protected $pinataService;
+    
+    public function __construct(NFTMarketplaceService $nftService, PinataService $pinataService)
+    {
+        $this->nftService = $nftService;
+        $this->pinataService = $pinataService;
+    }
+    
     public function index(Request $request,User $user)
     {
         // $wallet_address  = Wallet::where('user_id',$user->id)->get('wallet_address');
         $wallets = $user->wallet()->get(['wallet_address']);
+
+        $web3Config = $this->nftService->getWeb3Config();
 
         $fullAddress = null;
         $shortAddress = null;
@@ -28,8 +42,19 @@ class PublicProfileController extends Controller
 
        // dd($profile->avatar);
            
-        return view('pages.profile.public-profile', compact('user', 'fullAddress', 'shortAddress','profile'));
+        return view('pages.profile.public-profile', compact('user', 'fullAddress', 'shortAddress','profile' , 'web3Config'));
         }
+
+        public function creator(Request $request , User $user)
+        {
+            $seller_address = $request->input('seller_address');
+    
+            $profile = $user->wallet()->where('wallet_address' ,$seller_address)->first();
+            dd($profile);
+            return view('pages.profile.public-profile');
+
+        }
+    
 
 
         public function show(Request $request, User $user)

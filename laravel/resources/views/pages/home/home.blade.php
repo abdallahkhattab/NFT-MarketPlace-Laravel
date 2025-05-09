@@ -12,8 +12,6 @@
 <!-- Top Creators Section -->
 @include('pages.home.top-creator-section')
 
-
-
 <!-- Categories Section -->
 @include('pages.home.categories-section')
 
@@ -25,8 +23,5 @@
 
 <!-- How It Works Section -->
 @include('pages.home.how-it-works-section')
-
-
-
 
 @endsection

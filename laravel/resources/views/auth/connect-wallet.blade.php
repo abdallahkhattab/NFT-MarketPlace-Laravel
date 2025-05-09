@@ -185,7 +185,7 @@
                 <!-- Wallet Buttons -->
                 <div class="space-y-6">
                     <!-- MetaMask -->
-                    <button
+                    <button readonly
                         class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
                         id="metamask-btn">
                         <div class="flex items-center">
@@ -196,7 +196,7 @@
 
                     <button
                         class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
-                        id="trustwallet-btn">
+                        id="trustwallet-btn" readonly>
                         <div class="flex items-center">
                             <img src="https://altcoinsbox.com/wp-content/uploads/2023/03/trust-wallet-logo.png"
                                 alt="Trust Wallet Icon" class="w-8 h-8 mr-4">
@@ -204,19 +204,7 @@
                         </div>
                     </button>
 
-                 
-
-                    <!-- Wallet Connect -->
-                    <button
-                        class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
-                        id="walletconnect-btn">
-                        <div class="flex items-center">
-                            <img src="{{ asset('assets/wallet/WalletConnect.png') }}" alt="Wallet Connect Icon"
-                                class="w-8 h-8 mr-4">
-                            <span class="text-lg font-semibold">Wallet Connect</span>
-                        </div>
-                    </button>
-
+                
                     <!-- Coinbase -->
                     <button
                         class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
@@ -532,7 +520,7 @@
                 } else if (walletType === 'coinbase') {
                     hideLoadingState(walletType);
                     alert('Coinbase Wallet integration coming soon!');
-                }
+                } 
             } catch (error) {
                 hideLoadingState(walletType);
                 console.error('Error connecting to wallet:', error);

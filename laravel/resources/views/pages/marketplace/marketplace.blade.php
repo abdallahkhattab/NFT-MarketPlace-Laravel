@@ -1,4 +1,3 @@
-
 @extends('layouts.layout')
 
 @section('title', 'NFT Marketplace')
@@ -853,7 +852,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Fetch metadata from IPFS
     async function fetchMetadata(ipfsHash, tokenId) {
-        const dedicatedGateway = `https://beige-main-louse-684.mypinata.cloud/ipfs/${ipfsHash}`;
+        const dedicatedGateway = `https://ipfs.io/ipfs/${ipfsHash}`;
         const pinataJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI1Mzg2ZDA2MS0zZmE2LTRiNDktOWY2YS0yOTQxNmJhZjRlODkiLCJlbWFpbCI6ImJvb2R5a2hhdHRhYjk3QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiIyZTcwYTAzZWMzN2VmYjAzMjkxOCIsInNjb3BlZEtleVNlY3JldCI6IjdmY2FjOGQzNGQ1NDRmM2I1NmU3ZWQ4N2RjNmI2NzVjNzdiNWFlMGNmYmZmYjMwODc2YTljZjVhZDZjMmJlYTIiLCJleHAiOjE3NzgxNTY3OTh9.vtlL2PhURiG6NKVTbsoKPkaUJJgIy67iTZwdkR6ig5M';
 
         // Try CORS proxy
@@ -950,7 +949,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         name: metadata.name,
                         description: metadata.description,
                         image: metadata.image.startsWith('ipfs://') 
-                            ? `https://beige-main-louse-684.mypinata.cloud/ipfs/${metadata.image.replace('ipfs://', '')}`
+                            ? `https://ipfs.io/ipfs/${metadata.image.replace('ipfs://', '')}`
                             : metadata.image,
                         price: ethers.utils.formatEther(token.price),
                         seller: token.seller,
@@ -975,165 +974,202 @@ document.addEventListener('DOMContentLoaded', async function() {
             updateStats();
             filterAndRenderNFTs();
         } catch (error) {
-            console.error('Error loading NFTs:', {
-                message: error.message,
+            console.error('Error loading NFTs:', {                message: error.message,
                 stack: error.stack,
                 code: error.code
             });
-            showStatus('Failed to load NFTs: ' + error.message, 'error');
-            nftGrid.innerHTML = '<p class="text-gray-400 text-center col-span-4">Failed to load NFTs.</p>';
+            showStatus(`Failed to fetch NFTs: ${error.message}`, 'error');
+            nftGrid.innerHTML = '<p class="text-gray-400 text-center col-span-4">Error loading NFTs.</p>';
         } finally {
-            const elapsed = Date.now() - startTime;
-            if (elapsed < minDisplayTime) {
-                setTimeout(hideLoader, minDisplayTime - elapsed);
+            const elapsedTime = Date.now() - startTime;
+            if (elapsedTime < minDisplayTime) {
+                setTimeout(hideLoader, minDisplayTime - elapsedTime);
             } else {
                 hideLoader();
             }
         }
     }
 
-    // Update stats section
+    // Update stats
     function updateStats() {
         nftCount.textContent = nfts.length;
-        totalCount.textContent = nfts.length;
+        totalCount.textContent = filteredNFTs.length;
         showingCount.textContent = Math.min(currentPage * perPage, filteredNFTs.length);
     }
 
     // Filter and render NFTs
     function filterAndRenderNFTs() {
-        const searchTerm = searchInput.value.toLowerCase();
+        const searchQuery = searchInput.value.toLowerCase().trim();
+        const selectedCategory = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
         const maxPrice = parseFloat(priceSlider.value);
-        const category = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
-        const sortBy = sortSelect.value;
+        const sortOption = sortSelect.value;
 
         filteredNFTs = nfts.filter(nft => {
-            const matchesSearch = nft.name.toLowerCase().includes(searchTerm) || nft.description.toLowerCase().includes(searchTerm);
-            const matchesPrice = parseFloat(nft.price) <= maxPrice;
-            const matchesCategory = category === 'all' || nft.category === category;
-            return matchesSearch && matchesPrice && matchesCategory;
+            const matchesSearch = nft.name.toLowerCase().includes(searchQuery) ||
+                                 nft.description.toLowerCase().includes(searchQuery) ||
+                                 nft.seller.toLowerCase().includes(searchQuery);
+            const matchesCategory = selectedCategory === 'all' || nft.category === selectedCategory;
+            const matchesPrice = parseFloat(nft.price) <= maxPrice || maxPrice >= 5;
+            return matchesSearch && matchesCategory && matchesPrice;
         });
 
-        if (sortBy === 'price-low') {
-            filteredNFTs.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-        } else if (sortBy === 'price-high') {
-            filteredNFTs.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-        } else if (sortBy === 'recent') {
-            filteredNFTs.sort((a, b) => b.tokenId - a.tokenId);
-        }
+        // Sort NFTs
+        filteredNFTs.sort((a, b) => {
+            if (sortOption === 'price-low') {
+                return parseFloat(a.price) - parseFloat(b.price);
+            } else if (sortOption === 'price-high') {
+                return parseFloat(b.price) - parseFloat(a.price);
+            } else if (sortOption === 'recent') {
+                return b.tokenId - a.tokenId; // Higher tokenId is more recent
+            } else if (sortOption === 'popular') {
+                return (b.views || 0) - (a.views || 0); // Placeholder for popularity
+            }
+            return 0;
+        });
 
+        currentPage = 1;
         renderNFTs();
+        updateStats();
     }
 
-    // Render NFTs
+    // Render NFTs for current page
     function renderNFTs() {
         const start = (currentPage - 1) * perPage;
         const end = start + perPage;
-        const nftsToShow = filteredNFTs.slice(0, end);
+        const nftsToShow = filteredNFTs.slice(start, end);
 
         nftGrid.innerHTML = '';
-        nftsToShow.forEach((nft, index) => {
+        if (nftsToShow.length === 0) {
+            nftGrid.innerHTML = '<p class="text-gray-400 text-center col-span-4">No NFTs match your filters.</p>';
+            return;
+        }
+
+        nftsToShow.forEach(nft => {
             const card = document.createElement('div');
-            card.className = 'nft-card rounded-xl';
-            card.style.animation = `fadeIn 0.5s ease-out forwards`;
-            card.style.animationDelay = `${0.1 * (index + 1)}s`;
+            card.className = 'nft-card rounded-lg';
             card.innerHTML = `
-                <div class="nft-img-container h-40">
-                    <img src="${nft.image}" alt="${nft.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x400?text=Image+Error'; this.parentNode.parentNode.querySelector('.error-message').textContent='Failed to load image.'">
+                <div class="nft-img-container relative pb-[100%]">
+                    <a href="/nft/nft-details/${nft.tokenId}">
+                        <img src="${nft.image}" alt="${nft.name}" class="absolute inset-0 w-full h-full object-contain p-2">
+                    </a>
                     <span class="category-tag">${nft.category}</span>
-                    <button class="favorite-btn">
-                        <svg class="favorite-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
+                    <button class="favorite-btn" onclick="toggleFavorite(${nft.tokenId}, event)">
+                        <i class="fas fa-heart favorite-icon"></i>
                     </button>
                 </div>
                 <div class="nft-content">
-                    <h3 class="nft-title">${nft.name}</h3>
+                    <a href="/nft/nft-details/${nft.tokenId}">
+                        <h3 class="nft-title">${nft.name}</h3>
+                    </a>
                     <div class="nft-creator">
-                        <div class="w-6 h-6 rounded-full overflow-hidden creator-badge">
-                            <img src="https://via.placeholder.com/30x30?text=${nft.seller.slice(2, 4)}" alt="${nft.seller}" class="w-full h-full object-cover">
+                        <div class="creator-badge w-5 h-5 rounded-full flex items-center justify-center">
+                            <span class="text-xs">🛸</span>
                         </div>
                         <span class="creator-name">${nft.seller.slice(0, 6)}...${nft.seller.slice(-4)}</span>
                     </div>
                     <div class="nft-details">
                         <div>
                             <p class="price-label">Price</p>
-                            <p class="price-value">${nft.price} ETH</p>
+                            <p class="price-value">${parseFloat(nft.price).toFixed(3)} ETH</p>
                         </div>
                         <div class="text-right">
                             <p class="bid-label">Highest Bid</p>
                             <p class="bid-value">N/A</p>
                         </div>
                     </div>
-                    ${nft.isFallback ? '<p class="error-message">Metadata unavailable</p>' : '<p class="error-message"></p>'}
+                    <div class="buy-button" onclick="buyNFT(${nft.tokenId})">Buy Now</div>
                 </div>
-                <div class="buy-button" onclick="buyNFT(${nft.tokenId})">Buy Now</div>
             `;
             nftGrid.appendChild(card);
         });
 
-        updateStats();
+        // Update load more button visibility
+        document.querySelector('.load-more-btn').style.display = end >= filteredNFTs.length ? 'none' : 'block';
     }
 
     // Load more NFTs
-    function loadMoreNFTs() {
+    window.loadMoreNFTs = function() {
         currentPage++;
         renderNFTs();
-    }
-
-    // Buy NFT
-    async function buyNFT(tokenId) {
-        try {
-            const listedToken = await contract.getListedTokenForId(tokenId);
-            const price = listedToken.price;
-            const tx = await contract.executeSale(tokenId, {
-                value: price,
-                gasLimit: 300000
-            });
-            await tx.wait();
-            showStatus(`NFT ${tokenId} purchased successfully!`, 'success');
-            await loadNFTs();
-        } catch (error) {
-            console.error('Error buying NFT:', error);
-            showStatus('Failed to buy NFT: ' + error.message, 'error');
-        }
-    }
+        updateStats();
+    };
 
     // Search NFTs
-    function searchNFTs() {
-        currentPage = 1;
+    window.searchNFTs = function() {
         filterAndRenderNFTs();
-    }
+    };
 
     // Clear search
-    function clearSearch() {
+    window.clearSearch = function() {
         searchInput.value = '';
-        searchNFTs();
-    }
+        filterAndRenderNFTs();
+    };
 
-    // Filter by category
+    // Toggle favorite
+    window.toggleFavorite = function(tokenId, event) {
+        event.stopPropagation();
+        showStatus(`Favorite toggled for Token #${tokenId}`, 'success');
+        // Implement favorite logic (e.g., localStorage or backend API)
+    };
+
+    // Buy NFT
+    window.buyNFT = async function(tokenId) {
+        if (!contract || !signer) {
+            showStatus('Wallet not connected. Please connect MetaMask.', 'error');
+            return;
+        }
+
+        try {
+            showLoader();
+            const token = nfts.find(nft => nft.tokenId === tokenId);
+            if (!token) {
+                showStatus('NFT not found.', 'error');
+                return;
+            }
+
+            const price = ethers.utils.parseEther(token.price);
+            const tx = await contract.executeSale(tokenId, { value: price });
+            await tx.wait();
+            showStatus(`Successfully purchased Token #${tokenId}!`, 'success');
+            loadNFTs(); // Refresh the grid
+        } catch (error) {
+            console.error(`Error buying NFT ${tokenId}:`, error);
+            showStatus(`Failed to purchase NFT: ${error.message}`, 'error');
+        } finally {
+            hideLoader();
+        }
+    };
+
+    // Event listeners
+    searchInput.addEventListener('input', debounce(filterAndRenderNFTs, 300));
+    priceSlider.addEventListener('input', () => {
+        priceValue.textContent = `${priceSlider.value} ETH`;
+        filterAndRenderNFTs();
+    });
+    sortSelect.addEventListener('change', filterAndRenderNFTs);
+
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentPage = 1;
             filterAndRenderNFTs();
         });
     });
 
-    // Price slider
-    priceSlider.addEventListener('input', () => {
-        priceValue.textContent = `${priceSlider.value} ETH`;
-        currentPage = 1;
-        filterAndRenderNFTs();
-    });
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
-    // Sort select
-    sortSelect.addEventListener('change', () => {
-        currentPage = 1;
-        filterAndRenderNFTs();
-    });
-
-    // Load NFTs on page load
+    // Initial load
     loadNFTs();
 });
 </script>
