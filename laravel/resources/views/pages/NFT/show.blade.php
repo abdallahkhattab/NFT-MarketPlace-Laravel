@@ -217,19 +217,21 @@
             </div>
         </div>
     </div>
+
+    
     
     <!-- More From This Artist Section -->
     <div class="container mx-auto px-4 py-12">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-3xl font-bold neon-text">More From This Artist</h2>
-            @if($artist)
-                <a href="{{ route('public-profile', ['user' => $artist->name]) }}" class="border border-purple-500 rounded-lg px-6 py-2 flex items-center hover:bg-purple-500 hover:text-white transition">
-                    <span>Go To Artist Page</span>
-                    <span class="ml-2">→</span>
-                </a>
-            @else
-                <span class="text-gray-400">Artist profile not available</span>
-            @endif
+            <a id="wallet_address"
+            data-route-base="{{ url('profile/creator') }}"
+            href="#"
+            class="border border-purple-500 rounded-lg px-6 py-2 flex items-center hover:bg-purple-500 hover:text-white transition">
+             <span>Go To Artist Page</span>
+             <span class="ml-2">→</span> 
+         </a>
+         
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -439,8 +441,14 @@ async function loadNFTDetails() {
             category: metadata.category || 'Art',
             price: price,
             seller: seller,
-            mintedAt: '' // Adjust if contract provides this
+            mintedAt: 'Sep 30, 2022', // Adjust if contract provides this
         };
+
+            // Update the link dynamically
+    const link = document.getElementById('wallet_address');
+    const baseRoute = link.dataset.routeBase; // e.g., "https://yourapp.com/creator"
+    link.href = `${baseRoute}/${nftData.seller}`;
+
 
         // Update DOM
         document.getElementById('nft-name').textContent = nftData.name;
@@ -448,6 +456,7 @@ async function loadNFTDetails() {
         document.getElementById('nft-image').alt = nftData.name;
         document.getElementById('nft-details').textContent = `Minted on ${nftData.mintedAt} | Token ID: #${nftData.tokenId}`;
         document.getElementById('nft-seller').textContent = nftData.seller ? `${nftData.seller.slice(0, 6)}...${nftData.seller.slice(-4)}` : 'Unknown';
+
         document.getElementById('nft-price').textContent = `${parseFloat(nftData.price).toFixed(3)} ETH`;
         document.getElementById('etherscan-link').href = `https://sepolia.etherscan.io/token/${web3Config.contractAddress}?a=${nftData.tokenId}`;
         document.getElementById('ipfs-link').href = nftData.image.startsWith('https://ipfs.io/ipfs') 
@@ -587,6 +596,7 @@ function updateTimer() {
 function openModal(imageSrc) {
     document.getElementById('modalImage').src = imageSrc;
     document.getElementById('nftModal').classList.remove('hidden');
+    documentiativa: true
     document.body.classList.add('overflow-hidden');
     gsap.from('#modalImage', { scale: 0.8, opacity: 0, duration: 0.5, ease: 'power2.out' });
 }

@@ -17,6 +17,7 @@ Route::post('/authenticate', [MetaMaskController::class, 'authenticate'])->name(
 
 
 Route::get('/profile/@{user:name}',[PublicProfileController::class,'index'])->name('public-profile');
+Route::get('/profile/creator/{wallet}',[PublicProfileController::class,'creator'])->name('creator');
 
 Route::get('/myprofile/@{user:name}',[PublicProfileController::class,'show'])->name('my-public-profile');
 
