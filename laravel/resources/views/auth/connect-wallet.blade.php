@@ -185,7 +185,7 @@
                 <!-- Wallet Buttons -->
                 <div class="space-y-6">
                     <!-- MetaMask -->
-                    <button readonly
+                    <button 
                         class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
                         id="metamask-btn">
                         <div class="flex items-center">
@@ -194,26 +194,28 @@
                         </div>
                     </button>
 
-                    <button
-                        class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
-                        id="trustwallet-btn" readonly>
+                    <!-- TrustWallet -->
+                        <button
+                        class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all opacity-50 cursor-not-allowed"
+                        id="trustwallet-btn"
+                        disabled>
                         <div class="flex items-center">
                             <img src="https://altcoinsbox.com/wp-content/uploads/2023/03/trust-wallet-logo.png"
                                 alt="Trust Wallet Icon" class="w-8 h-8 mr-4">
                             <span class="text-lg font-semibold">TrustWallet</span>
                         </div>
-                    </button>
+                        </button>
 
-                
-                    <!-- Coinbase -->
-                    <button
-                        class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all"
-                        id="coinbase-btn">
+                        <!-- Coinbase -->
+                        <button
+                        class="wallet-button w-full flex items-center justify-between text-white py-4 px-6 rounded-xl transition-all opacity-50 cursor-not-allowed"
+                        id="coinbase-btn"
+                        disabled>
                         <div class="flex items-center">
                             <img src="{{ asset('assets/wallet/Coinbase.png') }}" alt="Coinbase Icon" class="w-8 h-8 mr-4">
                             <span class="text-lg font-semibold">Coinbase</span>
                         </div>
-                    </button>
+                        </button>
 
                 </div>
             </div>

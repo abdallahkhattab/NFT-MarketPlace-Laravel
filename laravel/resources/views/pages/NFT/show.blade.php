@@ -197,7 +197,7 @@
                         <p id="nft-price" class="text-2xl font-bold text-purple-300">{{ number_format($nft['price'], 3) }} ETH</p>
                     </div>
                     <button id="buyButton" class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium py-3 px-4 rounded-lg transition transform hover:scale-105">
-                        <i class="fas fa-wallet mr-2"></i> Connect Wallet to Buy
+                        <i class="fas fa-wallet mr-2"></i>  Buy
                     </button>
                 </div>
             </div>
@@ -290,19 +290,40 @@ const web3Config = @json($web3config);
 const tokenId = {{ $nft['tokenId'] }};
 let provider, signer, contract;
 let nftData = @json($nft);
+let isEdge = /Edg\//.test(navigator.userAgent);
+
+// Wait for MetaMask to be available
+async function waitForMetaMask(maxRetries = 5, retryDelay = 1000) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        if (window.ethereum) {
+            console.log('MetaMask detected on attempt', attempt);
+            return true;
+        }
+        console.warn(`MetaMask not detected on attempt ${attempt}/${maxRetries}. Retrying...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+    console.error('MetaMask not available after retries.');
+    showToast(isEdge ? 'MetaMask not detected in Edge. Please ensure MetaMask is installed and enabled in Extensions.' : 'MetaMask is not installed. Please install MetaMask to proceed.');
+    return false;
+}
 
 // Initialize Web3
 async function initWeb3() {
-    if (!window.ethereum) {
-        showToast('MetaMask is not installed. Please install MetaMask to proceed.');
+    console.log('Initializing Web3...');
+    const metaMaskAvailable = await waitForMetaMask();
+    if (!metaMaskAvailable) {
+        console.error('Web3 initialization aborted: MetaMask not available.');
         return false;
     }
+
     try {
         provider = new ethers.providers.Web3Provider(window.ethereum);
+        console.log('Requesting MetaMask accounts...');
         await provider.send("eth_requestAccounts", []);
         const network = await provider.getNetwork();
+        console.log('Connected to network:', network);
         if (network.chainId !== 11155111) { // Sepolia
-            showToast('Please switch MetaMask to the Sepolia network.');
+            showToast(isEdge ? 'Please switch MetaMask to the Sepolia network in Edge. Check extension permissions if the prompt fails.' : 'Please switch MetaMask to the Sepolia network.');
             return false;
         }
         signer = provider.getSigner();
@@ -311,10 +332,15 @@ async function initWeb3() {
             web3Config.contractABI,
             signer
         );
+        console.log('Web3 initialized successfully:', {
+            contractAddress: web3Config.contractAddress,
+            network: network.name,
+            chainId: network.chainId
+        });
         return true;
     } catch (error) {
         console.error('Web3 initialization failed:', error);
-        showToast('Failed to connect to blockchain. Please try again.');
+        showToast(isEdge ? `Failed to connect to blockchain in Edge: ${error.message}. Try refreshing or checking MetaMask permissions.` : `Failed to connect to blockchain: ${error.message}`);
         return false;
     }
 }
@@ -331,9 +357,7 @@ async function fetchWithCorsProxy(ipfsUrl) {
         try {
             console.log(`Trying CORS proxy: ${proxy} for URL: ${ipfsUrl}`);
             const response = await fetch(`${proxy}${encodeURIComponent(ipfsUrl)}`, {
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
             if (response.ok) {
                 const data = await response.json();
@@ -355,14 +379,12 @@ async function fetchMetadata(ipfsHash) {
     const dedicatedGateway = `https://ipfs.io/ipfs/${ipfsHash}`;
     const pinataJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI1Mzg2ZDA2MS0zZmE2LTRiNDktOWY2YS0yOTQxNmJhZjRlODkiLCJlbWFpbCI6ImJvb2R5a2hhdHRhYjk3QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiIyZTcwYTAzZWMzN2VmYjAzMjkxOCIsInNjb3BlZEtleVNlY3JldCI6IjdmY2FjOGQzNGQ1NDRmM2I1NmU3ZWQ4N2RjNmI2NzVjNzdiNWFlMGNmYmZmYjMwODc2YTljZjVhZDZjMmJlYTIiLCJleHAiOjE3NzgxNTY3OTh9.vtlL2PhURiG6NKVTbsoKPkaUJJgIy67iTZwdkR6ig5M';
 
-    // Try CORS proxy
     const corsMetadata = await fetchWithCorsProxy(dedicatedGateway);
     if (corsMetadata) {
         console.log(`Metadata fetched via CORS proxy for token ${tokenId}`);
         return corsMetadata;
     }
 
-    // Try dedicated Pinata gateway
     try {
         console.log(`Trying dedicated Pinata gateway for token ${tokenId}: ${dedicatedGateway}`);
         const response = await axios.get(dedicatedGateway, {
@@ -380,7 +402,6 @@ async function fetchMetadata(ipfsHash) {
         console.warn(`Dedicated gateway failed for token ${tokenId}:`, error.message);
     }
 
-    // Fallback metadata
     console.warn(`All fetch attempts failed for token ${tokenId}. Using fallback metadata.`);
     showToast(`Unable to load metadata for Token #${tokenId}.`);
     return {
@@ -394,8 +415,10 @@ async function fetchMetadata(ipfsHash) {
 
 // Fetch and display NFT details
 async function loadNFTDetails() {
+    console.log('Loading NFT details...');
     const initialized = await initWeb3();
     if (!initialized) {
+        console.error('NFT details not loaded due to Web3 initialization failure.');
         return;
     }
 
@@ -416,7 +439,6 @@ async function loadNFTDetails() {
             return;
         }
 
-        // Fetch price and seller
         let price = '0.0';
         let seller = 'Unknown';
         try {
@@ -430,7 +452,6 @@ async function loadNFTDetails() {
             console.error('Failed to fetch NFT details:', error);
         }
 
-        // Update nftData
         nftData = {
             tokenId: tokenId,
             name: metadata.name,
@@ -441,14 +462,13 @@ async function loadNFTDetails() {
             category: metadata.category || 'Art',
             price: price,
             seller: seller,
-            mintedAt: 'Sep 30, 2022', // Adjust if contract provides this
+            mintedAt: 'Sep 30, 2022'
         };
 
-            // Update the link dynamically
-    const link = document.getElementById('wallet_address');
-    const baseRoute = link.dataset.routeBase; // e.g., "https://yourapp.com/creator"
-    link.href = `${baseRoute}/${nftData.seller}`;
-
+        // Update the link dynamically
+        const link = document.getElementById('wallet_address');
+        const baseRoute = link.dataset.routeBase;
+        link.href = `${baseRoute}/${nftData.seller}`;
 
         // Update DOM
         document.getElementById('nft-name').textContent = nftData.name;
@@ -456,14 +476,12 @@ async function loadNFTDetails() {
         document.getElementById('nft-image').alt = nftData.name;
         document.getElementById('nft-details').textContent = `Minted on ${nftData.mintedAt} | Token ID: #${nftData.tokenId}`;
         document.getElementById('nft-seller').textContent = nftData.seller ? `${nftData.seller.slice(0, 6)}...${nftData.seller.slice(-4)}` : 'Unknown';
-
         document.getElementById('nft-price').textContent = `${parseFloat(nftData.price).toFixed(3)} ETH`;
         document.getElementById('etherscan-link').href = `https://sepolia.etherscan.io/token/${web3Config.contractAddress}?a=${nftData.tokenId}`;
         document.getElementById('ipfs-link').href = nftData.image.startsWith('https://ipfs.io/ipfs') 
             ? nftData.image 
             : `https://ipfs.io/ipfs/${ipfsHash}`;
 
-        // Update description
         const descriptionDiv = document.getElementById('nft-description');
         descriptionDiv.innerHTML = '';
         nftData.description.split('\n').forEach(para => {
@@ -472,7 +490,6 @@ async function loadNFTDetails() {
             descriptionDiv.appendChild(p);
         });
 
-        // Update tags
         const tagsDiv = document.getElementById('nft-tags');
         tagsDiv.innerHTML = `
             <span class="px-4 py-2 bg-gray-900 rounded-full text-sm border border-purple-500 text-purple-300">${nftData.category.toUpperCase()}</span>
@@ -487,58 +504,64 @@ async function loadNFTDetails() {
 
 // Buy NFT
 async function buyNFT() {
+    console.log('buyNFT called');
     if (!contract || !signer) {
-        showToast('Wallet not connected. Please connect MetaMask.');
+        console.warn('Cannot buy NFT: Wallet not connected.');
+        showToast(isEdge ? 'Wallet not connected in Edge. Please ensure MetaMask is enabled and try again.' : 'Wallet not connected. Please connect MetaMask.');
         return;
     }
     try {
-        // Step 1: Validate price
+        console.log('Validating NFT price...');
         if (!nftData.price || parseFloat(nftData.price) <= 0) {
+            console.warn('Invalid NFT price:', nftData.price);
             showToast('Invalid NFT price.');
             return;
         }
 
-        // Step 2: Get wallet balance
+        console.log('Getting wallet balance...');
         const walletAddress = await signer.getAddress();
         const balance = await provider.getBalance(walletAddress);
         const balanceInEth = ethers.utils.formatEther(balance);
+        console.log(`Wallet balance: ${balanceInEth} ETH`);
         showToast(`Wallet balance: ${parseFloat(balanceInEth).toFixed(3)} ETH`, 'info');
 
-        // Step 3: Estimate gas
+        console.log('Estimating gas...');
         const priceInWei = ethers.utils.parseEther(nftData.price.toString());
         let gasEstimate;
         try {
             gasEstimate = await contract.estimateGas.executeSale(nftData.tokenId, { value: priceInWei });
+            console.log('Gas estimate:', gasEstimate.toString());
         } catch (error) {
-            console.error('Gas estimation failed:', error);
-            gasEstimate = ethers.BigNumber.from('200000'); // Fallback gas limit
-            showToast('Gas estimation failed. Using default gas limit.', 'info');
+            console.warn('Gas estimation failed:', error);
+            gasEstimate = ethers.BigNumber.from('200000'); // Fallback
+            showToast(isEdge ? 'Gas estimation failed in Edge. Using default gas limit.' : 'Gas estimation failed. Using default gas limit.', 'info');
         }
 
-        // Step 4: Calculate total cost (price + gas)
+        console.log('Calculating total cost...');
         const gasPrice = await provider.getGasPrice();
         const gasCost = gasEstimate.mul(gasPrice);
         const totalCost = priceInWei.add(gasCost);
         const totalCostInEth = ethers.utils.formatEther(totalCost);
+        console.log(`Total cost: ${totalCostInEth} ETH`);
 
-        // Step 5: Check if balance is sufficient
         if (balance.lt(totalCost)) {
+            console.warn(`Insufficient funds. Need ${totalCostInEth} ETH, have ${balanceInEth} ETH`);
             showToast(`Insufficient funds. Need ${parseFloat(totalCostInEth).toFixed(3)} ETH, but only have ${parseFloat(balanceInEth).toFixed(3)} ETH. Please fund your wallet using a Sepolia faucet (e.g., https://sepolia-faucet.alchemy.com).`, 'error');
             return;
         }
 
-        // Step 6: Execute transaction
+        console.log('Executing transaction...');
         showToast('Initiating purchase. Please confirm in MetaMask...', 'info');
         const tx = await contract.executeSale(nftData.tokenId, { 
             value: priceInWei,
             gasLimit: gasEstimate.mul(115).div(100) // 15% buffer
         });
-        
-        // Step 7: Wait for confirmation
+        console.log('Transaction submitted:', tx.hash);
+
         showToast('Transaction submitted. Waiting for confirmation...', 'info');
         await tx.wait();
+        console.log('Transaction confirmed');
 
-        // Step 8: Success
         showToast(`Successfully purchased Token #${nftData.tokenId}!`, 'success');
     } catch (error) {
         console.error('Error purchasing NFT:', error);
@@ -550,7 +573,9 @@ async function buyNFT() {
         } else if (error.reason) {
             message = `Error: ${error.reason}`;
         } else if (error.code === -32603) {
-            message = 'Network error. Please try again later.';
+            message = isEdge ? 'Network error in Edge. Try refreshing or checking MetaMask settings.' : 'Network error. Please try again later.';
+        } else if (isEdge) {
+            message = `Failed in Edge: ${error.message}. Ensure MetaMask is enabled and try again.`;
         }
         showToast(message, 'error');
     }
@@ -596,7 +621,6 @@ function updateTimer() {
 function openModal(imageSrc) {
     document.getElementById('modalImage').src = imageSrc;
     document.getElementById('nftModal').classList.remove('hidden');
-    documentiativa: true
     document.body.classList.add('overflow-hidden');
     gsap.from('#modalImage', { scale: 0.8, opacity: 0, duration: 0.5, ease: 'power2.out' });
 }
@@ -622,7 +646,7 @@ function showToast(message, type = 'error') {
     toast.classList.add('show');
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 5000); // Extended to 5s for longer messages
+    }, 5000);
 }
 
 // Disable Context Menu on NFT Images
@@ -636,8 +660,9 @@ function disableContextMenu() {
     });
 }
 
-// Card Tilt Effect and Initialization
-document.addEventListener('DOMContentLoaded', async function() {
+// Initialize Page
+async function initializePage() {
+    console.log('Initializing page...');
     createParticles();
     updateTimer();
     setInterval(updateTimer, 1000);
@@ -676,18 +701,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Load NFT details
     await loadNFTDetails();
 
-    // Initialize buy button
-    const buyButton = document.getElementById('buyButton');
-    if (buyButton) {
-        buyButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const initialized = await initWeb3();
-            if (initialized) {
-                await buyNFT();
-            }
-        });
+    // Initialize buy button with retry
+    function bindBuyButton() {
+        const buyButton = document.getElementById('buyButton');
+        if (!buyButton) {
+            console.warn('Buy button not found. Retrying...');
+            setTimeout(bindBuyButton, 500);
+            return;
+        }
+        console.log('Binding buy button event listener...');
+        buyButton.removeEventListener('click', handleBuyClick); // Prevent duplicate listeners
+        buyButton.addEventListener('click', handleBuyClick);
     }
-});
+
+    async function handleBuyClick(e) {
+        console.log('Buy button clicked');
+        e.preventDefault();
+        const initialized = await initWeb3();
+        if (initialized) {
+            await buyNFT();
+        }
+    }
+
+    bindBuyButton();
+}
+
+// Run initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+    initializePage();
+}
 </script>
 @endpush
 @endsection

@@ -6,15 +6,8 @@
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
-.typewriter {
-overflow: hidden;
-white-space: nowrap;
-}
 
-.hidden-until {
-opacity: 0;
-visibility: hidden;
-}
+
 
 @keyframes typing {
 from { width: 0; }
@@ -65,11 +58,7 @@ to { opacity: 1; visibility: visible; }
         box-shadow: 0 4px 10px rgba(162, 89, 255, 0.3);
     }
 
-    .typewriter {
-        overflow: hidden;
-        white-space: nowrap;
-        animation: typing 3.5s steps(40, end);
-    }
+
 
     @keyframes typing {
         from { width: 0; }

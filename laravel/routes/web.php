@@ -16,6 +16,7 @@ Route::post('/authenticate', [MetaMaskController::class, 'authenticate'])->name(
 
 
 
+
 Route::get('/profile/@{user:name}',[PublicProfileController::class,'index'])->name('public-profile');
 Route::get('/profile/creator/{wallet}',[PublicProfileController::class,'creator'])->name('creator');
 
@@ -60,7 +61,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::get('home' , [NFtMarketPlaceController::class,'index'])->name('home');
+Route::get('home' , [HomeController::class,'index'])->name('home');
 
 
 

@@ -10,7 +10,7 @@
 @include('pages.home.trending-colection-section')
 
 <!-- Top Creators Section -->
-@include('pages.home.top-creator-section')
+@include('pages.home.top-creator-section' , ['topCreators' => $topCreators])
 
 <!-- Categories Section -->
 @include('pages.home.categories-section')

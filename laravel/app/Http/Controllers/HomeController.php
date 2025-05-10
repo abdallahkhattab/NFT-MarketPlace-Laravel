@@ -26,16 +26,19 @@ class HomeController extends Controller
 
         $web3Config = $this->nftService->getWeb3Config();
 
+        $topCreators = User::with('profile')->limit(4)->get(); // Fetch any 3 users for now
+
+
         return view('pages.home.home',[
             'web3Config'=> $web3Config,
+            'topCreators'=> $topCreators,
         ]);
     }
 
 
+  
 
 
-
-   
 
     /**
      * Show the form for creating a new resource.

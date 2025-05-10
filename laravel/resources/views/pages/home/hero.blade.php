@@ -9,12 +9,12 @@
     <div class="container mx-auto grid md:grid-cols-2 gap-10 items-center relative">
         <!-- Left Column: Text and Stats -->
         <div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 neon-text typewriter glitch" style="animation: typing 1.5s steps(40, end);">Discover Digital Art</h1>
-            <h1 class="text-4xl md:text-5xl font-bold mb-6 neon-text">& Collect NFTs</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 neon-text typewriter glitch" style="animation: typing 1.5s steps(40, end);">Discover Digital Art &</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 neon-text"> Collect NFTs</h1>
             <p class="text-gray-300 mb-8 leading-relaxed hidden-until" style="animation: fadeIn 0.3s ease-in 1.5s forwards;">
                 Step into a decentralized metaverse marketplace powered by Ethereum. Collect, trade, and own unique digital art from over 20,000 creators.
             </p>
-            <a href="{{ route('register') }}" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white py-3 px-8 rounded-full flex items-center w-max transition-transform hover:scale-105 pulse">
+            <a href="{{ route('wallet-connection') }}" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white py-3 px-8 rounded-full flex items-center w-max transition-transform hover:scale-105 pulse">
                 <i class="fas fa-wallet mr-2"></i> Connect & Get Started
             </a>
             

@@ -8,7 +8,7 @@
                 <a href="#" class="text-white font-bold text-lg">NFT Marketplace</a>
             </div>
             <p class="text-gray-400 mb-4">NFT Marketplace Developed by </p>
-            <p class="text-gray-400 mb-4">DEV:Abdallah Khattab</p>
+            <p class="text-gray-400 mb-4">Abdallah Khattab</p>
             <div class="flex space-x-4">
                 <a href="#" class="text-gray-400 hover:text-light-purple transition-colors">
                     <i class="fab fa-discord text-xl"></i>

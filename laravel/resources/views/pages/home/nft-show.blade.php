@@ -14,7 +14,6 @@
             <div class="mb-4">
                 <div class="inline-flex items-center bg-gray-800 bg-opacity-50 backdrop-blur-sm px-4 py-2 rounded-full">
                     <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-700 mr-2">
-                        <img src="/api/placeholder/24/24" alt="Shroomie" class="w-full h-full object-cover">
                     </div>
                     <span class="text-white">Shroomie</span>
                 </div>
@@ -57,5 +56,4 @@
         </div>
     </div>
 
-    
 </section>
