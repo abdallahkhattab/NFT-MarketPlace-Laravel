@@ -9,6 +9,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::post('/nft/upload-image', [NFTMarketplaceController::class, 'uploadImage'])->name('nft.upload-image');
-Route::post('/nft/create-metadata', [NFTMarketplaceController::class, 'createMetadata'])->name('nft.create-metadata');
 

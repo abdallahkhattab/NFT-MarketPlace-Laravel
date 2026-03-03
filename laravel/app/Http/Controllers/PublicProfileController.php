@@ -24,7 +24,6 @@ class PublicProfileController extends Controller
 
     public function index(Request $request, User $user)
     {
-        // $wallet_address  = Wallet::where('user_id',$user->id)->get('wallet_address');
         $wallets = $user->wallet()->get(['wallet_address']);
 
         $web3Config = $this->nftService->getWeb3Config();
@@ -38,9 +37,6 @@ class PublicProfileController extends Controller
         }
 
         $profile = Profile::where('user_id', $user->id)->first();
-
-
-        // dd($profile->avatar);
 
         return view('pages.profile.public-profile', compact('user', 'fullAddress', 'shortAddress', 'profile', 'web3Config'));
     }
