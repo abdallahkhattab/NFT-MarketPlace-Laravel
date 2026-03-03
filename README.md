@@ -11,10 +11,6 @@
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-Ah, perfect — thanks for clarifying! Since your NFT Marketplace doesn’t use Filament, we can remove all references to it and focus purely on **Laravel, Blade, MetaMask, Hardhat, and Alchemy**.
-
-Here’s the cleaned-up, recruiter-friendly README:
-
 ---
 
 # NFT Marketplace
@@ -34,7 +30,7 @@ The **NFT Marketplace** is a full-stack blockchain application built with **Lara
 
 It uses **Hardhat** for smart contract development and deployment, and **Alchemy** as the Ethereum node provider for blockchain interaction.
 
-**Demo Video** : https://www.youtube.com/watch?v=2gzDGYa-GoE
+**Demo Video** : `https://www.youtube.com/watch?v=2gzDGYa-GoE`
 
 **Key features**:
 
